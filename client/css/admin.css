@@ -138,3 +138,57 @@
     align-items: start;
   }
 }
+
+/* Security Gate Responsive Header & Input Row */
+.security-user-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  background: rgba(13, 59, 46, 0.08);
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+}
+
+@media (max-width: 560px) {
+  .no-mobile {
+    display: none !important;
+  }
+  .security-user-badge {
+    max-width: 85px;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+.manual-input-row {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.manual-input-row input {
+  flex: 1;
+  min-width: 0 !important; /* Critical flex fix for input overflow */
+  font-size: 0.82rem;
+  padding: 0.45rem 0.65rem;
+}
+
+.manual-input-row button {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  padding: 0.45rem 0.85rem;
+}
+
+@media (max-width: 420px) {
+  .manual-input-row {
+    flex-direction: column;
+  }
+  .manual-input-row button {
+    width: 100%;
+  }
+}
