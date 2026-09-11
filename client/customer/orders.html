@@ -12,7 +12,7 @@
   <div id="app">
     <!-- Navbar Header -->
     <nav class="navbar">
-      <div class="container flex items-center justify-between" style="padding:0 1rem;max-width:480px;margin:0 auto;">
+      <div class="container flex items-center justify-between" style="padding:0 1rem;max-width:800px;margin:0 auto;">
         <a href="/customer/dashboard.html" class="nav-brand flex-col">
           <div class="flex items-center gap-2">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary-dark);"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
@@ -20,12 +20,21 @@
           </div>
           <span class="tagline">Scan. Shop. Pay. Go.</span>
         </a>
+
+        <!-- Desktop Nav Links -->
+        <div class="desktop-nav-links">
+          <a href="/customer/dashboard.html" class="desktop-nav-link">Store Home</a>
+          <a href="/customer/scanner.html" class="desktop-nav-link">Scan Barcode</a>
+          <a href="/customer/cart.html" class="desktop-nav-link">My Cart</a>
+          <a href="/customer/orders.html" class="desktop-nav-link active">My Orders</a>
+        </div>
+
         <button onclick="auth.logout()" class="btn btn-secondary btn-sm" style="padding:0.4rem 0.8rem;font-size:0.78rem;">Logout</button>
       </div>
     </nav>
 
     <!-- Main Orders Content -->
-    <main class="container" style="padding:1rem;max-width:480px;margin:0 auto;flex:1;">
+    <main class="container" style="padding:1rem;max-width:800px;margin:0 auto;flex:1;">
       <h2 style="margin-bottom:1.25rem;color:var(--primary-dark);font-size:1.3rem;">Order History & Digital Receipts</h2>
 
       <div id="orders-list">

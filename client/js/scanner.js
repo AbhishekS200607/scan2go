@@ -12,9 +12,51 @@ class BarcodeScannerEngine {
     this.isScanning = false;
     this.lastScannedText = null;
     this.lastScanTime = 0;
+    this.currentCameraId = null;
   }
 
-  async startScanner() {
+  async getCameras() {
+    try {
+      if (typeof Html5Qrcode === 'undefined') {
+        await this.loadScannerLibrary();
+      }
+      return await Html5Qrcode.getCameras();
+    } catch (e) {
+      console.warn('Failed to list camera devices:', e);
+      return [];
+    }
+  }
+
+  async populateCameraSelect(selectElId) {
+    const selectEl = document.getElementById(selectElId);
+    if (!selectEl) return;
+
+    const cameras = await this.getCameras();
+    if (!cameras || cameras.length === 0) {
+      selectEl.innerHTML = '<option value="">Default Camera</option>';
+      return;
+    }
+
+    selectEl.innerHTML = cameras.map((cam, idx) => `
+      <option value="${cam.id}">${cam.label || `Camera Device ${idx + 1}`}</option>
+    `).join('');
+
+    selectEl.onchange = async (e) => {
+      const selectedId = e.target.value;
+      if (selectedId) {
+        await this.switchCamera(selectedId);
+      }
+    };
+  }
+
+  async switchCamera(cameraId) {
+    if (this.isScanning) {
+      await this.stopScanner();
+    }
+    await this.startScanner(cameraId);
+  }
+
+  async startScanner(preferredCameraId = null) {
     if (this.isScanning) return;
 
     try {
@@ -57,18 +99,26 @@ class BarcodeScannerEngine {
         }
       };
 
-      // Try camera with facingMode "environment" (rear camera)
-      try {
+      if (preferredCameraId) {
         await this.html5QrcodeScanner.start(
-          { facingMode: "environment" },
+          preferredCameraId,
           config,
           scanCallback,
-          () => {} // Silent frame error handler
+          () => {}
         );
-      } catch (envErr) {
-        console.warn('Rear camera unavailable or restricted, attempting camera fallback...', envErr);
-        // Fallback to "user" camera or first available camera device
+        this.currentCameraId = preferredCameraId;
+      } else {
+        // Try camera with facingMode "environment" (rear camera)
         try {
+          await this.html5QrcodeScanner.start(
+            { facingMode: "environment" },
+            config,
+            scanCallback,
+            () => {} // Silent frame error handler
+          );
+        } catch (envErr) {
+          console.warn('Rear camera unavailable or restricted, attempting desktop camera fallback...', envErr);
+          // Fallback to "user" camera or first available desktop webcam
           const devices = await Html5Qrcode.getCameras();
           if (devices && devices.length > 0) {
             const cameraId = devices[0].id;
@@ -78,11 +128,10 @@ class BarcodeScannerEngine {
               scanCallback,
               () => {}
             );
+            this.currentCameraId = cameraId;
           } else {
             throw envErr;
           }
-        } catch (fallbackErr) {
-          throw fallbackErr;
         }
       }
 

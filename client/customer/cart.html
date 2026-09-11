@@ -12,7 +12,7 @@
   <div id="app">
     <!-- Navbar Header -->
     <nav class="navbar">
-      <div class="container flex items-center justify-between" style="padding:0 1rem;max-width:480px;margin:0 auto;">
+      <div class="container flex items-center justify-between" style="padding:0 1rem;max-width:960px;margin:0 auto;">
         <a href="/customer/dashboard.html" class="nav-brand flex-col">
           <div class="flex items-center gap-2">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary-dark);"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
@@ -20,6 +20,15 @@
           </div>
           <span class="tagline">Scan. Shop. Pay. Go.</span>
         </a>
+
+        <!-- Desktop Nav Links -->
+        <div class="desktop-nav-links">
+          <a href="/customer/dashboard.html" class="desktop-nav-link">Store Home</a>
+          <a href="/customer/scanner.html" class="desktop-nav-link">Scan Barcode</a>
+          <a href="/customer/cart.html" class="desktop-nav-link active">My Cart (<span class="cart-count">0</span>)</a>
+          <a href="/customer/orders.html" class="desktop-nav-link">My Orders</a>
+        </div>
+
         <a href="/customer/scanner.html" class="btn btn-secondary btn-sm flex items-center gap-1" style="padding:0.4rem 0.8rem;font-size:0.78rem;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary-dark);"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
           Add Items
@@ -28,18 +37,18 @@
     </nav>
 
     <!-- Main Cart Content -->
-    <main class="container" style="padding:1rem;max-width:480px;margin:0 auto;flex:1;">
+    <main class="container" style="padding:1rem;max-width:960px;margin:0 auto;flex:1;">
       <h2 style="margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;color:var(--primary-dark);font-size:1.3rem;">
         <span>Your Self-Checkout Cart</span>
         <button class="btn btn-sm btn-secondary" onclick="cartUI.clearCart()" style="font-size:0.75rem;padding:0.35rem 0.75rem;">Clear Cart</button>
       </h2>
 
-      <div style="display:flex;flex-direction:column;gap:1.25rem;">
+      <div class="cart-grid-desktop">
         <div id="cart-items-list" class="cart-list">
           <!-- Loaded dynamically -->
         </div>
 
-        <div class="card" style="box-shadow:var(--shadow-md);">
+        <div class="card" style="box-shadow:var(--shadow-md);position:sticky;top:80px;">
           <h3 style="margin-bottom:0.85rem;border-bottom:1px solid var(--border-color);padding-bottom:0.4rem;color:var(--primary-dark);font-size:1.1rem;">Order Summary</h3>
           <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem;font-size:0.9rem;">
             <span class="text-muted">Subtotal:</span>

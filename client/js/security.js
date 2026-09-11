@@ -10,7 +10,7 @@ const securityUI = {
     this.initQRScanner();
   },
 
-  initQRScanner() {
+  async initQRScanner() {
     const readerEl = document.getElementById('security-reader');
     if (!readerEl) return;
 
@@ -25,7 +25,8 @@ const securityUI = {
       }
     });
 
-    this.scannerEngine.startScanner();
+    await this.scannerEngine.startScanner();
+    await this.scannerEngine.populateCameraSelect('security-camera-select');
   },
 
   toggleCamera() {

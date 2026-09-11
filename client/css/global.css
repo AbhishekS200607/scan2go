@@ -236,3 +236,34 @@ a:hover {
     background: #ffffff !important;
   }
 }
+
+/* Desktop Navigation Header Links */
+.desktop-nav-links {
+  display: none;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+@media (min-width: 900px) {
+  .desktop-nav-links {
+    display: flex;
+  }
+}
+
+.desktop-nav-link {
+  color: var(--primary-dark);
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.desktop-nav-link:hover, .desktop-nav-link.active {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--accent-green-dark);
+}

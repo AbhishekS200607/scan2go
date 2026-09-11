@@ -30,6 +30,11 @@
     <!-- Main Scanner Body Container -->
     <main class="container" style="max-width:440px;margin:0 auto;flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 1.25rem 5rem;">
       
+      <!-- Camera / Webcam Selector -->
+      <div style="width:100%;max-width:310px;margin-bottom:0.75rem;">
+        <select id="cust-camera-select" class="form-control" style="font-size:0.85rem;padding:0.4rem 0.6rem;background:rgba(255,255,255,0.1);color:#ffffff;border:1px solid rgba(255,255,255,0.2);"></select>
+      </div>
+
       <!-- Camera Barcode Frame -->
       <div class="scanner-frame" id="reader">
         <div class="scanner-laser"></div>
@@ -116,7 +121,7 @@
       initScanner();
     }
 
-    function initScanner() {
+    async function initScanner() {
       scannerEngine = new BarcodeScannerEngine({
         renderTargetId: 'reader',
         onScanSuccess: (barcodeText) => {
@@ -126,7 +131,8 @@
           console.log('Camera warning:', err);
         }
       });
-      scannerEngine.startScanner();
+      await scannerEngine.startScanner();
+      await scannerEngine.populateCameraSelect('cust-camera-select');
     }
 
     async function lookupBarcode(barcode) {

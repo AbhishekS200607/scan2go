@@ -124,3 +124,17 @@
 .data-table tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
+
+/* Security Exit Gate Desktop Split Layout */
+.security-desktop-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 960px) {
+  .security-desktop-grid {
+    grid-template-columns: 380px 1fr;
+    align-items: start;
+  }
+}

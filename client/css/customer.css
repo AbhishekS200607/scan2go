@@ -406,6 +406,21 @@
   100% { top: 10%; }
 }
 
+/* Desktop Customer Responsive Grid */
+.cart-grid-desktop {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+@media (min-width: 900px) {
+  .cart-grid-desktop {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    align-items: start;
+  }
+}
+
 /* Product Detail Modal (Screen 3 Spec) */
 .modal-overlay {
   position: fixed;
