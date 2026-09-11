@@ -24,6 +24,23 @@ const securityController = {
   },
 
   /**
+   * Reject / Deny Exit Verification (Security Staff Override)
+   */
+  async rejectExitToken(req, res, next) {
+    try {
+      const { token, reason } = req.body;
+      if (!token) {
+        return sendError(res, 'QR token or Order Ref is required.', 400, 'VALIDATION_ERROR');
+      }
+
+      const result = await securityService.rejectExitToken(token, req.user.id, reason || 'REJECTED_BY_SECURITY');
+      return sendSuccess(res, result, 200, 'Exit verification rejected.');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
    * Get Security Audit Logs
    */
   async getLogs(req, res, next) {

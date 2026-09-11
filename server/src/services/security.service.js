@@ -141,6 +141,66 @@ const securityService = {
   },
 
   /**
+   * Explicitly Reject/Deny Customer Store Exit (Security Staff Override)
+   */
+  async rejectExitToken(rawToken, securityUserId, reason = 'REJECTED_BY_SECURITY') {
+    if (!rawToken || typeof rawToken !== 'string') {
+      return {
+        valid: false,
+        reason: 'INVALID_TOKEN',
+        message: 'Invalid or missing QR token string.'
+      };
+    }
+
+    let targetHash = hashToken(rawToken.trim());
+    let orderId = null;
+    let orderNumber = null;
+
+    if (isSupabaseConfigured) {
+      const supabase = getSupabase();
+      if (rawToken.trim().toUpperCase().startsWith('SG-')) {
+        const { data: ord } = await supabase.from('orders').select('id, order_number').eq('order_number', rawToken.trim().toUpperCase()).single();
+        if (ord) {
+          orderId = ord.id;
+          orderNumber = ord.order_number;
+        }
+      }
+      this.logSecurityAttempt(orderId, securityUserId, 'INVALID', reason);
+      return {
+        valid: false,
+        reason,
+        order_number: orderNumber,
+        message: `Exit Pass explicitly REJECTED by security staff. Reason: ${reason}`
+      };
+    }
+
+    let token = localDb.checkout_tokens.find(t => t.token_hash === targetHash);
+    if (!token && rawToken.trim().toUpperCase().startsWith('SG-')) {
+      const ord = localDb.orders.find(o => o.order_number === rawToken.trim().toUpperCase());
+      if (ord) {
+        token = localDb.checkout_tokens.find(t => t.order_id === ord.id);
+        orderId = ord.id;
+        orderNumber = ord.order_number;
+      }
+    } else if (token) {
+      const ord = localDb.orders.find(o => o.id === token.order_id);
+      if (ord) {
+        orderId = ord.id;
+        orderNumber = ord.order_number;
+      }
+    }
+
+    this.logSecurityAttempt(orderId, securityUserId, 'INVALID', reason);
+
+    return {
+      valid: false,
+      reason,
+      order_number: orderNumber,
+      message: `Exit Pass explicitly REJECTED by security staff. Reason: ${reason}`
+    };
+  },
+
+  /**
    * Get Security Verification Audit Logs (Admin & Security Staff)
    */
   async getSecurityLogs({ page = 1, limit = 20 }) {

@@ -10,6 +10,7 @@ router.use(requireRole('security', 'admin'));
 
 router.post('/verify', securityVerifyLimiter, securityController.verifyExitToken);
 router.post('/exit', securityVerifyLimiter, securityController.verifyExitToken);
+router.post('/reject', securityVerifyLimiter, securityController.rejectExitToken);
 router.get('/logs', securityController.getLogs);
 
 module.exports = router;
