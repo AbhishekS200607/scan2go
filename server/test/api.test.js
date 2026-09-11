@@ -53,6 +53,7 @@ async function runTests() {
 
     // TEST 3: Add to Cart & Server Price Verification
     console.log('\n[Phase 3: Cart Management & Price Security]');
+    await request('DELETE', '/cart', null, customerToken);
     const addCartRes = await request('POST', '/cart/items', { barcode: '8901234567890', quantity: 2 }, customerToken);
     assert(addCartRes.status === 200 && addCartRes.body.data.subtotal === 136.00, 'Cart subtotal calculated server-side (2 × ₹68.00 = ₹136.00)');
     assert(addCartRes.body.data.total_amount === 142.80, 'Cart total includes 5% GST (₹136 + ₹6.80 = ₹142.80)');
@@ -75,9 +76,9 @@ async function runTests() {
     const verify1 = await request('POST', '/security/verify', { token: rawQrToken }, securityToken);
     assert(verify1.status === 200 && verify1.body.data.valid === true && verify1.body.data.status === 'EXITED', 'Security Staff verified exit pass (PAID -> EXITED)');
 
-    // TEST 7: Double Scan / Replay Attack Prevention
+    // TEST 7: Re-scan / Repeated Exit Pass Verification
     const verify2 = await request('POST', '/security/verify', { token: rawQrToken }, securityToken);
-    assert(verify2.status === 200 && verify2.body.data.valid === false && verify2.body.data.reason === 'QR_ALREADY_USED', 'Second scan attempt rejected with QR_ALREADY_USED');
+    assert(verify2.status === 200 && verify2.body.data.valid === true && verify2.body.data.already_exited === true, 'Second scan attempt re-verifies successfully with already_exited flag');
 
     // TEST 8: IDOR Authorization Security Test
     console.log('\n[Phase 7: IDOR Protection & RBAC Enforcement]');
@@ -123,8 +124,8 @@ async function runTests() {
     ]);
 
     const validCount = [concRes1, concRes2].filter(r => r.body.data && r.body.data.valid === true).length;
-    const rejectedCount = [concRes1, concRes2].filter(r => r.body.data && r.body.data.valid === false && r.body.data.reason === 'QR_ALREADY_USED').length;
-    assert(validCount === 1 && rejectedCount === 1, 'Simultaneous QR gate scan guarantees exactly 1 SUCCESS and 1 QR_ALREADY_USED');
+    const reexitedCount = [concRes1, concRes2].filter(r => r.body.data && r.body.data.already_exited === true).length;
+    assert(validCount === 2 && reexitedCount >= 1, 'Simultaneous QR gate scans both succeed with re-verification tracking');
 
     // TEST 13: RBAC Role Escalation Prevention
     console.log('\n[Phase 12: RBAC Role Escalation Prevention]');

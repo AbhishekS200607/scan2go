@@ -3,11 +3,24 @@
  */
 const ordersUI = {
   async loadUserOrders() {
+    const listEl = document.getElementById('orders-list');
+    if (listEl) {
+      listEl.innerHTML = '<div style="text-align:center;padding:3rem;"><span class="spinner"></span><p class="text-muted" style="margin-top:0.5rem;">Loading your order history...</p></div>';
+    }
     try {
       const orders = await api.get('/orders');
       this.renderOrders(orders || []);
     } catch (err) {
       console.error('Failed to load user orders:', err);
+      if (listEl) {
+        listEl.innerHTML = `
+          <div style="text-align:center;padding:2rem;" class="card">
+            <h3 style="color:var(--danger-color);">Error Loading Orders</h3>
+            <p class="text-muted">${err.message || 'Could not retrieve your order history.'}</p>
+            <button onclick="ordersUI.loadUserOrders()" class="btn btn-secondary btn-sm" style="margin-top:0.5rem;">Try Again</button>
+          </div>
+        `;
+      }
     }
   },
 

@@ -6,6 +6,10 @@ const cartUI = {
   cartState: null,
 
   async loadCart() {
+    const listEl = document.getElementById('cart-items-list');
+    if (listEl) {
+      listEl.innerHTML = `<div style="text-align:center;padding:3rem;"><span class="spinner" style="width:28px;height:28px;color:var(--primary-dark);"></span></div>`;
+    }
     try {
       const cart = await api.get('/cart');
       this.cartState = cart;
@@ -13,6 +17,14 @@ const cartUI = {
       return cart;
     } catch (err) {
       console.error('Failed to load cart:', err);
+      if (listEl) {
+        listEl.innerHTML = `
+          <div style="text-align:center;padding:3rem 1rem;" class="card">
+            <h3>Unable to load cart</h3>
+            <p class="text-muted">Please check your connection and try again.</p>
+          </div>
+        `;
+      }
     }
   },
 
@@ -29,6 +41,7 @@ const cartUI = {
     const subtotalEl = document.getElementById('cart-subtotal');
     const taxEl = document.getElementById('cart-tax');
     const totalEl = document.getElementById('cart-total');
+    const clearBtn = document.getElementById('btn-clear-cart');
 
     if (subtotalEl) subtotalEl.textContent = utils.formatCurrency(cart.subtotal);
     if (taxEl) taxEl.textContent = utils.formatCurrency(cart.tax_amount);
@@ -49,15 +62,23 @@ const cartUI = {
       `;
       const checkoutBtn = document.getElementById('btn-proceed-checkout');
       if (checkoutBtn) checkoutBtn.disabled = true;
+      if (clearBtn) clearBtn.disabled = true;
       return;
     }
 
+    if (clearBtn) clearBtn.disabled = false;
     const checkoutBtn = document.getElementById('btn-proceed-checkout');
     if (checkoutBtn) checkoutBtn.disabled = false;
 
     listEl.innerHTML = cart.items.map((item, idx) => `
       <div class="cart-item animate-fade-in" style="animation-delay: ${idx * 0.05}s;">
-        <img src="${item.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500'}" class="cart-item-img" alt="${item.name}" />
+        <div class="cart-item-badge" style="width:44px;height:44px;border-radius:10px;background:rgba(0,108,73,0.12);color:var(--secondary, #006c49);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
         <div style="flex:1;">
           <div class="font-bold" style="font-size:1rem;color:var(--text-main);">${item.name}</div>
           <div class="text-muted" style="font-size:0.78rem;font-family:monospace;">${item.barcode}</div>

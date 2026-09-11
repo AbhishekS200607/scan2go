@@ -30,10 +30,16 @@ const api = {
           localStorage.removeItem(CONFIG.TOKEN_STORAGE_KEY);
           localStorage.removeItem(CONFIG.USER_STORAGE_KEY);
           if (!window.location.pathname.includes('login.html')) {
-            utils.showToast('Session expired. Please log in again.', 'error');
+            if (window.utils && utils.showToast) {
+              utils.showToast('Session expired. Please log in again.', 'error');
+            }
             setTimeout(() => { window.location.href = '/login.html'; }, 1000);
           }
-        } else if (response.status === 403) {
+        } else if (response.status === 429) {
+          if (window.utils && utils.showToast) {
+            utils.showToast('Too many requests. Please wait a moment.', 'warning');
+          }
+        } else if (window.utils && utils.showToast) {
           utils.showToast(errorMsg, 'error');
         }
 
@@ -45,6 +51,14 @@ const api = {
 
       return json.data;
     } catch (err) {
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        const networkErr = new Error('Unable to connect to the server. Please check your network connection.');
+        if (window.utils && utils.showToast) {
+          utils.showToast(networkErr.message, 'error');
+        }
+        console.error(`API Network Error [${endpoint}]:`, err);
+        throw networkErr;
+      }
       console.error(`API Error [${endpoint}]:`, err);
       throw err;
     }

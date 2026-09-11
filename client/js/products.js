@@ -30,6 +30,10 @@ const productsUI = {
   },
 
   async loadProducts() {
+    const grid = document.getElementById('products-grid');
+    if (grid) {
+      grid.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding: 3rem;"><span class="spinner" style="width:28px;height:28px;color:var(--primary-dark);"></span></div>`;
+    }
     try {
       const params = {};
       if (this.activeCategory) params.category_id = this.activeCategory;
@@ -40,6 +44,14 @@ const productsUI = {
       this.renderProducts(this.allProducts);
     } catch (err) {
       console.error('Failed to load products:', err);
+      if (grid) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align:center; padding: 3rem;" class="card">
+            <h3>Unable to load products</h3>
+            <p class="text-muted">Please check your network connection and try again.</p>
+          </div>
+        `;
+      }
     }
   },
 
@@ -71,8 +83,14 @@ const productsUI = {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
           </button>
           
-          <div class="product-img-wrapper">
-            <img src="${p.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500'}" class="product-img" alt="${p.name}" />
+          <div class="product-img-wrapper" style="display:flex;align-items:center;justify-content:center;background:var(--surface-container-high, #f1f5f9);border-radius:12px;padding:1.25rem;">
+            <div class="product-badge" style="width:48px;height:48px;border-radius:50%;background:rgba(0,108,73,0.12);color:var(--secondary, #006c49);display:flex;align-items:center;justify-content:center;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+            </div>
           </div>
 
           <div class="product-details">

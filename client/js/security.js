@@ -127,9 +127,18 @@ const securityUI = {
   async verifyToken(tokenString) {
     if (!tokenString) return;
 
+    let cleanToken = tokenString.trim();
+    if (cleanToken.includes('token=')) {
+      const match = cleanToken.match(/token=([a-fA-F0-9]{32,64}|SG-[A-Za-z0-9_-]+)/i);
+      if (match && match[1]) cleanToken = match[1];
+    } else if (cleanToken.includes('order_number=')) {
+      const match = cleanToken.match(/order_number=(SG-[A-Za-z0-9_-]+)/i);
+      if (match && match[1]) cleanToken = match[1];
+    }
+
     try {
-      const result = await api.post('/security/verify', { token: tokenString.trim() });
-      this.currentVerifiedToken = tokenString.trim();
+      const result = await api.post('/security/verify', { token: cleanToken });
+      this.currentVerifiedToken = cleanToken;
       this.currentVerifiedOrder = result;
       this.renderVerificationResult(result);
       this.loadVerificationHistory();
@@ -146,8 +155,17 @@ const securityUI = {
   async rejectToken(tokenString, reason = 'REJECTED_BY_SECURITY') {
     if (!tokenString) return;
 
+    let cleanToken = tokenString.trim();
+    if (cleanToken.includes('token=')) {
+      const match = cleanToken.match(/token=([a-fA-F0-9]{32,64}|SG-[A-Za-z0-9_-]+)/i);
+      if (match && match[1]) cleanToken = match[1];
+    } else if (cleanToken.includes('order_number=')) {
+      const match = cleanToken.match(/order_number=(SG-[A-Za-z0-9_-]+)/i);
+      if (match && match[1]) cleanToken = match[1];
+    }
+
     try {
-      const result = await api.post('/security/reject', { token: tokenString.trim(), reason });
+      const result = await api.post('/security/reject', { token: cleanToken, reason });
       this.renderVerificationResult(result);
       this.loadVerificationHistory();
     } catch (err) {
@@ -181,11 +199,15 @@ const securityUI = {
 
     if (res.valid) {
       utils.playBeep();
-      utils.showToast(`✅ Exit Verified: Order #${res.order_number || ''}`, 'success');
+      if (res.already_exited) {
+        utils.showToast(`ℹ️ Pass Re-verified (Already Exited): Order #${res.order_number || ''}`, 'info');
+      } else {
+        utils.showToast(`✅ Exit Verified: Order #${res.order_number || ''}`, 'success');
+      }
 
       if (window.notificationsUI) {
         notificationsUI.addNotification({
-          title: `🛡️ Exit Pass Verified: Order #${res.order_number || ''}`,
+          title: res.already_exited ? `ℹ️ Exit Pass Re-verified: Order #${res.order_number || ''}` : `🛡️ Exit Pass Verified: Order #${res.order_number || ''}`,
           message: `Cleared for store exit. Total: ${utils.formatCurrency(res.total || 0)} (${(res.items || []).length} items).`,
           type: 'order'
         });
@@ -196,10 +218,6 @@ const securityUI = {
       const verifiedTime = res.verified_at ? new Date(res.verified_at).toLocaleTimeString('en-IN', { hour12: false }) : new Date().toLocaleTimeString('en-IN', { hour12: false }) + ' IST';
       const staffName = document.getElementById('security-user-name')?.textContent || 'Security Guard';
       
-      // Calculate estimated vs actual bag weight scale reading
-      const totalWeightKg = (res.items || []).reduce((acc, i) => acc + (0.45 * (i.quantity || 1)), 1.2).toFixed(2);
-      const actualWeightKg = (parseFloat(totalWeightKg) + 0.02).toFixed(2);
-
       container.innerHTML = `
         <div id="verified-card" class="bg-surface-container-lowest rounded-lg p-space-md shadow-md flex flex-col gap-space-sm relative overflow-hidden border border-outline-variant/30">
           <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-secondary-fixed via-secondary to-primary-container"></div>
@@ -211,25 +229,25 @@ const securityUI = {
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.54 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill-rule="evenodd"></path></svg>
               </div>
               <div>
-                <span class="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider">Payment Verified</span>
+                <span class="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider">${res.already_exited ? 'Pass Re-Verified (Previously Exited)' : 'Payment Verified'}</span>
                 <div class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight">${totalItemsCount} Items Matched</div>
               </div>
             </div>
             <div class="text-right">
               <div class="font-label-sm text-label-sm text-on-surface-variant font-mono">${verifiedTime}</div>
-              <span class="font-label-sm text-label-sm bg-secondary-container/40 text-on-secondary-fixed-variant px-2 py-0.5 rounded-full font-semibold">UPI Auto-Reconciled</span>
+              ${res.already_exited ? '<span class="font-label-sm text-label-sm bg-amber-500/20 text-amber-700 px-2 py-0.5 rounded-full font-semibold">RE-VERIFIED PASS</span>' : '<span class="font-label-sm text-label-sm bg-secondary-container/40 text-on-secondary-fixed-variant px-2 py-0.5 rounded-full font-semibold">Payment Confirmed</span>'}
             </div>
           </div>
 
           <!-- Customer Tile -->
           <div class="bg-surface-container-low rounded p-space-sm flex items-center justify-between">
             <div class="flex items-center gap-2.5">
-              <div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-on-surface font-headline-sm">
-                AS
+              <div class="w-10 h-10 rounded-full bg-secondary-container/30 text-secondary flex items-center justify-center font-bold">
+                <span class="material-symbols-outlined text-[20px]">person</span>
               </div>
               <div class="flex flex-col">
-                <span class="font-body-md text-body-md font-semibold text-on-surface">Verified Customer</span>
-                <span class="font-label-sm text-label-sm text-on-surface-variant">Pass #${res.order_number || 'SG-PASSED'} • 4.9★ Verified Shopper</span>
+                <span class="font-body-md text-body-md font-semibold text-on-surface">Digital Receipt Customer</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant">Order Ref: #${res.order_number || 'SG-PASSED'} • Verified Account</span>
               </div>
             </div>
             <div class="text-right">
@@ -262,19 +280,19 @@ const securityUI = {
             </div>
           </div>
 
-          <!-- Exit Bag Weight Telemetry -->
+          <!-- Real Verification Status -->
           <div class="mt-1 bg-surface-container-high rounded p-space-sm flex items-center justify-between">
             <div class="flex items-center gap-2">
               <div class="w-7 h-7 rounded bg-surface-container-highest flex items-center justify-center text-on-surface">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                <span class="material-symbols-outlined text-[18px]">verified</span>
               </div>
               <div class="flex flex-col">
-                <span class="font-label-sm text-label-sm text-on-surface-variant">Exit Weight Scale Platform</span>
-                <span class="font-body-sm text-body-sm text-on-surface font-medium">Reading: <strong class="text-on-surface">${actualWeightKg} kg</strong> vs Est. <strong>${totalWeightKg} kg</strong></span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant">Security Gate Verification</span>
+                <span class="font-body-sm text-body-sm text-on-surface font-medium">Single-use pass verified at <strong>${verifiedTime}</strong></span>
               </div>
             </div>
-            <div class="flex items-center gap-1 bg-secondary-container px-2 py-0.5 rounded-full text-on-secondary-fixed font-label-sm text-label-sm font-bold">
-              <span>±0.3% OK</span>
+            <div class="flex items-center gap-1 bg-secondary-container px-2.5 py-0.5 rounded-full text-on-secondary-fixed font-label-sm text-label-sm font-bold">
+              <span>PASS VERIFIED</span>
             </div>
           </div>
 

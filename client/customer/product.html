@@ -171,7 +171,13 @@
           <div class="absolute -bottom-2 -left-3 w-14 h-14 opacity-25 text-secondary pointer-events-none -rotate-45">
             <svg fill="currentColor" viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66l.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"></path></svg>
           </div>
-          <img id="product-img" alt="Product Image" class="w-full h-full object-contain drop-shadow-[0_12px_24px_rgba(21,56,37,0.12)]" src="https://images.unsplash.com/photo-1563636619-e9143da7973b?w=500"/>
+          <div id="product-hero-badge" class="w-36 h-36 rounded-full bg-secondary-container/40 flex items-center justify-center text-secondary shadow-lg">
+            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </div>
         </div>
 
         <div class="flex items-center gap-2 mt-4 z-10">
@@ -193,24 +199,7 @@
 
           <div class="flex flex-col mt-1">
             <h2 id="product-title" class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary tracking-tight">Loading Product...</h2>
-            <p id="product-unit" class="font-body-md text-body-md text-on-surface-variant font-medium">1 Litre • Fresh Dairy</p>
-          </div>
-
-          <div class="flex items-center gap-2 mt-1">
-            <div class="flex items-center gap-1 bg-surface-container-low px-2.5 py-1 rounded-full">
-              <svg class="w-3.5 h-3.5 text-secondary" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path>
-              </svg>
-              <span class="font-label-md text-label-md font-semibold text-primary">4.8</span>
-              <span class="font-label-sm text-label-sm text-on-surface-variant">(120 reviews)</span>
-            </div>
-            <span class="text-outline-variant">•</span>
-            <div class="flex items-center gap-1.5 text-secondary">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
-              <span class="font-label-md text-label-md font-semibold">Rich Calcium & Protein</span>
-            </div>
+            <p id="product-unit" class="font-body-md text-body-md text-on-surface-variant font-medium">Scan2Go Supermarket Catalog</p>
           </div>
         </div>
 
@@ -222,19 +211,19 @@
         </div>
 
         <div class="flex flex-col gap-3">
-          <h3 class="font-label-lg text-label-lg font-bold text-primary">Nutritional Highlights (Per 100g/ml)</h3>
+          <h3 class="font-label-lg text-label-lg font-bold text-primary">Product Specifications</h3>
           <div class="grid grid-cols-3 gap-2">
             <div class="flex flex-col items-center justify-center p-3 rounded-DEFAULT bg-surface-container-low text-center">
-              <span class="font-label-sm text-label-sm text-on-surface-variant">Energy</span>
-              <span class="font-headline-sm text-headline-sm font-bold text-primary mt-0.5">62 kcal</span>
+              <span class="font-label-sm text-label-sm text-on-surface-variant">Barcode</span>
+              <span id="product-spec-barcode" class="font-label-md text-label-md font-bold text-primary mt-0.5 font-mono">-</span>
             </div>
             <div class="flex flex-col items-center justify-center p-3 rounded-DEFAULT bg-surface-container-low text-center">
-              <span class="font-label-sm text-label-sm text-on-surface-variant">Fat</span>
-              <span class="font-headline-sm text-headline-sm font-bold text-primary mt-0.5">3.5g</span>
+              <span class="font-label-sm text-label-sm text-on-surface-variant">GST Tax</span>
+              <span id="product-spec-tax" class="font-headline-sm text-headline-sm font-bold text-primary mt-0.5">5.0%</span>
             </div>
             <div class="flex flex-col items-center justify-center p-3 rounded-DEFAULT bg-surface-container-low text-center">
-              <span class="font-label-sm text-label-sm text-on-surface-variant">Protein</span>
-              <span class="font-headline-sm text-headline-sm font-bold text-primary mt-0.5">3.2g</span>
+              <span class="font-label-sm text-label-sm text-on-surface-variant">Stock</span>
+              <span id="product-spec-stock" class="font-headline-sm text-headline-sm font-bold text-primary mt-0.5">0</span>
             </div>
           </div>
         </div>
@@ -348,18 +337,29 @@
     function renderProductDetails(p) {
       document.getElementById('product-title').textContent = p.name;
       document.getElementById('product-price').textContent = utils.formatCurrency(p.price);
-      document.getElementById('product-img').src = p.image_url || 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=500';
-      document.getElementById('product-description').textContent = p.description || "Pure and fresh supermarket quality product, pasteurized and rich in wholesome nutrition. Sourced daily from fresh producers.";
+      document.getElementById('product-description').textContent = p.description || "Supermarket quality product, verified and ready for self-checkout.";
       
-      let unitText = '1 Unit';
-      if (p.name.toLowerCase().includes('milk') || p.name.toLowerCase().includes('juice')) unitText = '1 Litre • Fresh Dairy';
-      else if (p.name.toLowerCase().includes('bread')) unitText = '400 g • Bakery Fresh';
-      else if (p.name.toLowerCase().includes('rice')) unitText = '5 kg • Premium Grain';
-      document.getElementById('product-unit').textContent = unitText;
+      const catName = p.categories?.name || p.category?.name || 'General Supermarket';
+      document.getElementById('product-unit').textContent = `Category: ${catName}`;
 
-      const aisle = p.category?.name || 'Aisle 2';
-      document.getElementById('product-stock-badge').textContent = `In Stock (${aisle} • Chiller)`;
-      document.getElementById('product-aisle-badge').textContent = aisle;
+      const stockCount = p.stock_quantity ?? 0;
+      const inStock = stockCount > 0;
+      const stockBadge = document.getElementById('product-stock-badge');
+      if (stockBadge) {
+        stockBadge.textContent = inStock ? `In Stock (${stockCount} Available)` : 'Out of Stock';
+      }
+
+      const aisleBadge = document.getElementById('product-aisle-badge');
+      if (aisleBadge) {
+        aisleBadge.textContent = catName;
+      }
+
+      const bcodeEl = document.getElementById('product-spec-barcode');
+      const taxEl = document.getElementById('product-spec-tax');
+      const stockEl = document.getElementById('product-spec-stock');
+      if (bcodeEl) bcodeEl.textContent = p.barcode || '-';
+      if (taxEl) taxEl.textContent = `${parseFloat(p.tax_percent || 0).toFixed(1)}%`;
+      if (stockEl) stockEl.textContent = stockCount;
     }
 
     function updateQty(delta) {

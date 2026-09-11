@@ -56,9 +56,18 @@
       </button>
 
       <!-- Scanned Product Preview Overlay -->
-      <div id="scanned-product-preview" class="card hidden" style="width:100%;margin-top:1.25rem;background:#ffffff;color:var(--text-main);border-color:var(--accent-green);box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      <div id="scanned-product-preview" class="card hidden" style="width:100%;margin-top:1.25rem;background:#ffffff;color:var(--text-main);border-color:var(--accent-green);box-shadow: 0 10px 30px rgba(0,0,0,0.5);position:relative;padding-top:1.25rem;">
+        <button onclick="document.getElementById('scanned-product-preview').classList.add('hidden')" aria-label="Close preview" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:var(--surface-container-high, #f1f5f9);border:none;color:var(--text-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#e2e8f0';this.style.color='#000'" onmouseout="this.style.background='#f1f5f9';this.style.color='var(--text-muted)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
         <div class="flex items-center gap-3">
-          <img id="scanned-img" src="" style="width:60px;height:60px;border-radius:var(--radius-sm);object-fit:cover;background:#f4f6f4;" alt="Product">
+          <div id="scanned-badge" style="width:52px;height:52px;border-radius:var(--radius-sm);background:rgba(0,108,73,0.12);color:var(--secondary, #006c49);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </div>
           <div style="flex:1;">
             <div id="scanned-name" class="font-bold" style="font-size:0.95rem;color:var(--text-main);"></div>
             <div id="scanned-barcode" style="font-size:0.75rem;font-family:monospace;color:var(--text-muted);"></div>
@@ -69,13 +78,16 @@
       </div>
 
       <!-- Manual Input Card -->
-      <div id="manual-entry-card" class="card hidden" style="width:100%;background:#ffffff;color:var(--text-main);margin-top:1.25rem;">
+      <div id="manual-entry-card" class="card hidden" style="width:100%;background:#ffffff;color:var(--text-main);margin-top:1.25rem;position:relative;">
+        <button onclick="toggleManualEntry()" aria-label="Close manual entry" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:var(--surface-container-high, #f1f5f9);border:none;color:var(--text-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#e2e8f0';this.style.color='#000'" onmouseout="this.style.background='#f1f5f9';this.style.color='var(--text-muted)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
         <h4 style="margin-bottom:0.75rem;color:var(--text-main);font-size:0.95rem;">Enter Product Barcode</h4>
         <div class="flex gap-2">
-          <input type="text" id="manual-barcode-input" class="form-control" placeholder="e.g. 8901234567890">
+          <input type="text" id="manual-barcode-input" class="form-control" placeholder="e.g. 8901234567890" onkeyup="if(event.key==='Enter') handleManualBarcode()">
           <button class="btn btn-primary btn-sm" onclick="handleManualBarcode()">Submit</button>
         </div>
-        <div style="margin-top:0.6rem;font-size:0.75rem;color:var(--text-muted);">Demo: 8901234567890, 8901234567894</div>
+        <div style="margin-top:0.6rem;font-size:0.75rem;color:var(--text-muted);">Sample store barcodes: 8901234567890 (Whole Milk 1L), 8901234567894 (Whole Wheat Bread)</div>
       </div>
 
     </main>
@@ -136,34 +148,58 @@
     }
 
     async function lookupBarcode(barcode) {
+      const cleanBarcode = String(barcode || '').trim();
+      if (!cleanBarcode) return;
+
       try {
-        const product = await api.get(`/products/barcode/${barcode}`);
+        const product = await api.get(`/products/barcode/${encodeURIComponent(cleanBarcode)}`);
         utils.playBeep();
 
-        document.getElementById('scanned-product-preview').classList.remove('hidden');
+        const previewEl = document.getElementById('scanned-product-preview');
+        if (previewEl) {
+          previewEl.classList.remove('hidden');
+          previewEl.style.display = 'block';
+          previewEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
         document.getElementById('scanned-name').textContent = product.name;
         document.getElementById('scanned-barcode').textContent = `BARCODE: ${product.barcode}`;
         document.getElementById('scanned-price').textContent = utils.formatCurrency(product.price);
-        document.getElementById('scanned-img').src = product.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';
 
-        document.getElementById('btn-add-scanned').onclick = async () => {
-          await cartUI.addToCart(product.id, product.barcode, 1);
-          document.getElementById('scanned-product-preview').classList.add('hidden');
+        document.getElementById('btn-add-scanned').onclick = async (e) => {
+          await cartUI.addToCart(product.id, product.barcode, 1, e);
+          if (previewEl) {
+            previewEl.classList.add('hidden');
+            previewEl.style.display = 'none';
+          }
         };
       } catch (err) {
-        utils.showToast(`No product found for barcode ${barcode}`, 'error');
+        utils.showToast(`No product found for barcode ${cleanBarcode}`, 'error');
       }
     }
 
     function toggleManualEntry() {
       const card = document.getElementById('manual-entry-card');
-      card.classList.toggle('hidden');
+      if (card) {
+        const isHidden = card.classList.contains('hidden') || card.style.display === 'none';
+        if (isHidden) {
+          card.classList.remove('hidden');
+          card.style.display = 'block';
+          document.getElementById('manual-barcode-input')?.focus();
+        } else {
+          card.classList.add('hidden');
+          card.style.display = 'none';
+        }
+      }
     }
 
     async function handleManualBarcode() {
-      const code = document.getElementById('manual-barcode-input').value.trim();
+      const input = document.getElementById('manual-barcode-input');
+      const code = input ? input.value.trim() : '';
       if (code) {
         await lookupBarcode(code);
+      } else {
+        utils.showToast('Please enter a barcode number', 'warning');
       }
     }
   </script>

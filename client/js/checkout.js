@@ -5,13 +5,35 @@ const checkoutUI = {
   currentOrder: null,
 
   async initCheckout() {
+    const itemsEl = document.getElementById('checkout-items-summary');
+    const btn = document.getElementById('btn-pay-now');
+    
+    if (itemsEl) {
+      itemsEl.innerHTML = '<div style="text-align:center;padding:2rem 0;"><span class="spinner"></span><p class="text-muted" style="margin-top:0.5rem;">Preparing your order summary...</p></div>';
+    }
+    if (btn) btn.disabled = true;
+
     try {
       // 1. Create Order from Cart
       const order = await api.post('/orders');
       this.currentOrder = order;
       this.renderOrderReview(order);
+      if (btn) btn.disabled = false;
     } catch (err) {
       console.error('Checkout error:', err);
+      if (itemsEl) {
+        itemsEl.innerHTML = `
+          <div style="text-align:center;padding:2rem 1rem;">
+            <div style="margin-bottom:0.75rem;color:var(--text-muted);">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            </div>
+            <h4 style="margin-bottom:0.4rem;color:var(--primary-dark);">Unable to process checkout</h4>
+            <p class="text-muted" style="font-size:0.85rem;margin-bottom:1rem;">${err.message || 'Your cart may be empty or has changed.'}</p>
+            <a href="/customer/cart.html" class="btn btn-primary btn-sm">Return to Cart</a>
+          </div>
+        `;
+      }
+      if (btn) btn.disabled = true;
     }
   },
 

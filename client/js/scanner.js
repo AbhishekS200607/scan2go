@@ -136,9 +136,41 @@ class BarcodeScannerEngine {
       }
 
       this.isScanning = true;
+
+      // Mobile Safari / Chrome video element attribute optimization
+      if (targetEl) {
+        const videoEl = targetEl.querySelector('video');
+        if (videoEl) {
+          videoEl.setAttribute('playsinline', 'true');
+          videoEl.setAttribute('webkit-playsinline', 'true');
+          videoEl.setAttribute('muted', 'true');
+          videoEl.muted = true;
+        }
+      }
+
+      // Automatically register cleanup handlers on window unload/hide
+      this._cleanupHandler = () => this.stopScanner();
+      window.addEventListener('pagehide', this._cleanupHandler, { once: true });
+      window.addEventListener('beforeunload', this._cleanupHandler, { once: true });
     } catch (err) {
       console.warn('Camera scanner start error:', err);
       this.isScanning = false;
+      
+      const targetEl = document.getElementById(this.renderTargetId);
+      if (targetEl) {
+        targetEl.innerHTML = `
+          <div style="padding:1.5rem;text-align:center;color:rgba(255,255,255,0.85);font-size:0.85rem;">
+            <div style="font-size:2rem;margin-bottom:0.4rem;">📷</div>
+            <div style="font-weight:700;margin-bottom:0.25rem;color:#ffffff;">Camera Stream Inactive</div>
+            <p style="color:rgba(255,255,255,0.65);font-size:0.75rem;margin-bottom:0.5rem;">
+              ${err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' 
+                ? 'Camera access permission requested. Please allow camera access in your browser settings.' 
+                : 'Unable to access live video stream. You can manually enter barcodes below.'}
+            </p>
+          </div>
+        `;
+      }
+      
       if (this.onError) {
         this.onError(err);
       }
@@ -146,6 +178,11 @@ class BarcodeScannerEngine {
   }
 
   async stopScanner() {
+    if (this._cleanupHandler) {
+      window.removeEventListener('pagehide', this._cleanupHandler);
+      window.removeEventListener('beforeunload', this._cleanupHandler);
+      this._cleanupHandler = null;
+    }
     if (this.html5QrcodeScanner && this.isScanning) {
       try {
         await this.html5QrcodeScanner.stop();

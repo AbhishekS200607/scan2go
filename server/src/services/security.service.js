@@ -16,7 +16,20 @@ const securityService = {
       };
     }
 
-    let targetHash = hashToken(rawToken.trim());
+    let cleanToken = rawToken.trim();
+    if (cleanToken.includes('token=')) {
+      const match = cleanToken.match(/token=([a-fA-F0-9]{32,64}|SG-[A-Za-z0-9_-]+)/i);
+      if (match && match[1]) {
+        cleanToken = match[1];
+      }
+    } else if (cleanToken.includes('order_number=')) {
+      const match = cleanToken.match(/order_number=(SG-[A-Za-z0-9_-]+)/i);
+      if (match && match[1]) {
+        cleanToken = match[1];
+      }
+    }
+
+    let targetHash = hashToken(cleanToken);
 
     // 1. If remote Supabase is configured, call atomic PostgreSQL RPC procedure `verify_and_exit_checkout_token`
     if (isSupabaseConfigured) {
@@ -26,8 +39,8 @@ const securityService = {
       }
 
       // Order Reference (e.g. SG-123456) manual fallback lookup
-      if (rawToken.trim().toUpperCase().startsWith('SG-')) {
-        const { data: ord } = await supabase.from('orders').select('id, checkout_tokens(token_hash)').eq('order_number', rawToken.trim().toUpperCase()).single();
+      if (cleanToken.toUpperCase().startsWith('SG-')) {
+        const { data: ord } = await supabase.from('orders').select('id, checkout_tokens(token_hash)').eq('order_number', cleanToken.toUpperCase()).single();
         if (ord && ord.checkout_tokens && ord.checkout_tokens.token_hash) {
           targetHash = ord.checkout_tokens.token_hash;
         } else if (ord && Array.isArray(ord.checkout_tokens) && ord.checkout_tokens[0]) {
@@ -40,13 +53,44 @@ const securityService = {
         p_security_user_id: securityUserId
       });
       if (error) throw error;
+
+      if (data && !data.valid && data.reason === 'QR_ALREADY_USED') {
+        const { data: tokenData } = await supabase
+          .from('checkout_tokens')
+          .select('order_id, exited_at, verified_at, orders(id, order_number, total_amount, order_items(product_name_snapshot, barcode_snapshot, quantity, unit_price, line_total))')
+          .eq('token_hash', targetHash)
+          .single();
+
+        if (tokenData && tokenData.orders) {
+          const ord = tokenData.orders;
+          const items = (ord.order_items || []).map(i => ({
+            name: i.product_name_snapshot,
+            barcode: i.barcode_snapshot,
+            quantity: i.quantity,
+            unit_price: i.unit_price,
+            line_total: i.line_total
+          }));
+
+          return {
+            valid: true,
+            already_exited: true,
+            status: 'EXITED',
+            order_id: ord.id,
+            order_number: ord.order_number,
+            total: ord.total_amount,
+            items,
+            verified_at: tokenData.exited_at || tokenData.verified_at
+          };
+        }
+      }
+
       return data;
     }
 
     // 2. Atomic Simulation for local DB fallback
     let token = localDb.checkout_tokens.find(t => t.token_hash === targetHash);
-    if (!token && rawToken.trim().toUpperCase().startsWith('SG-')) {
-      const ord = localDb.orders.find(o => o.order_number === rawToken.trim().toUpperCase());
+    if (!token && cleanToken.toUpperCase().startsWith('SG-')) {
+      const ord = localDb.orders.find(o => o.order_number === cleanToken.toUpperCase());
       if (ord) {
         token = localDb.checkout_tokens.find(t => t.order_id === ord.id);
       }
@@ -73,13 +117,27 @@ const securityService = {
       };
     }
 
-    // Check if Already Used / Exited (Race Condition Protection)
+    // Check if Already Used / Exited (Race Condition Protection & Re-verification)
     if (token.status === 'EXITED') {
-      this.logSecurityAttempt(token.order_id, securityUserId, 'ALREADY_USED', 'Token status is already EXITED');
+      this.logSecurityAttempt(token.order_id, securityUserId, 'ALREADY_USED', 'Token re-scanned (already EXITED)');
+      const order = localDb.orders.find(o => o.id === token.order_id);
+      const items = order ? localDb.order_items.filter(i => i.order_id === order.id).map(i => ({
+        name: i.product_name_snapshot,
+        barcode: i.barcode_snapshot,
+        quantity: i.quantity,
+        unit_price: i.unit_price,
+        line_total: i.line_total
+      })) : [];
+
       return {
-        valid: false,
-        reason: 'QR_ALREADY_USED',
-        message: 'This QR pass has already been verified and exited.'
+        valid: true,
+        already_exited: true,
+        status: 'EXITED',
+        order_id: order ? order.id : token.order_id,
+        order_number: order ? order.order_number : null,
+        total: order ? order.total_amount : 0,
+        items,
+        verified_at: token.exited_at || token.verified_at
       };
     }
 
@@ -152,14 +210,27 @@ const securityService = {
       };
     }
 
-    let targetHash = hashToken(rawToken.trim());
+    let cleanToken = rawToken.trim();
+    if (cleanToken.includes('token=')) {
+      const match = cleanToken.match(/token=([a-fA-F0-9]{32,64}|SG-[A-Za-z0-9_-]+)/i);
+      if (match && match[1]) {
+        cleanToken = match[1];
+      }
+    } else if (cleanToken.includes('order_number=')) {
+      const match = cleanToken.match(/order_number=(SG-[A-Za-z0-9_-]+)/i);
+      if (match && match[1]) {
+        cleanToken = match[1];
+      }
+    }
+
+    let targetHash = hashToken(cleanToken);
     let orderId = null;
     let orderNumber = null;
 
     if (isSupabaseConfigured) {
       const supabase = getSupabase();
-      if (rawToken.trim().toUpperCase().startsWith('SG-')) {
-        const { data: ord } = await supabase.from('orders').select('id, order_number').eq('order_number', rawToken.trim().toUpperCase()).single();
+      if (cleanToken.toUpperCase().startsWith('SG-')) {
+        const { data: ord } = await supabase.from('orders').select('id, order_number').eq('order_number', cleanToken.toUpperCase()).single();
         if (ord) {
           orderId = ord.id;
           orderNumber = ord.order_number;
@@ -175,8 +246,8 @@ const securityService = {
     }
 
     let token = localDb.checkout_tokens.find(t => t.token_hash === targetHash);
-    if (!token && rawToken.trim().toUpperCase().startsWith('SG-')) {
-      const ord = localDb.orders.find(o => o.order_number === rawToken.trim().toUpperCase());
+    if (!token && cleanToken.toUpperCase().startsWith('SG-')) {
+      const ord = localDb.orders.find(o => o.order_number === cleanToken.toUpperCase());
       if (ord) {
         token = localDb.checkout_tokens.find(t => t.order_id === ord.id);
         orderId = ord.id;

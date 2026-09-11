@@ -69,19 +69,23 @@ const utils = {
     if (!sourceEl) return;
 
     const cardEl = sourceEl.closest('.product-card') || sourceEl.closest('.modal-content-sheet') || sourceEl.parentElement;
-    const imgEl = cardEl ? cardEl.querySelector('img') : null;
+    const badgeEl = cardEl ? (cardEl.querySelector('.product-badge') || cardEl.querySelector('.product-badge-container')) : null;
     const targetCart = document.querySelector('.cart-count') || document.querySelector('.scan-fab');
 
     if (!targetCart) return;
 
-    const startRect = imgEl ? imgEl.getBoundingClientRect() : sourceEl.getBoundingClientRect();
+    const startRect = badgeEl ? badgeEl.getBoundingClientRect() : sourceEl.getBoundingClientRect();
     const targetRect = targetCart.getBoundingClientRect();
 
-    const flyer = document.createElement('img');
-    flyer.src = imgEl ? imgEl.src : 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';
+    const flyer = document.createElement('div');
     flyer.className = 'flying-item';
-    flyer.style.top = `${startRect.top + startRect.height / 2 - 22}px`;
-    flyer.style.left = `${startRect.left + startRect.width / 2 - 22}px`;
+    flyer.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#006c49" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>`;
+    flyer.style.top = `${startRect.top + startRect.height / 2 - 15}px`;
+    flyer.style.left = `${startRect.left + startRect.width / 2 - 15}px`;
+    flyer.style.position = 'fixed';
+    flyer.style.zIndex = '9999';
+    flyer.style.pointerEvents = 'none';
+    flyer.style.transition = 'all 0.6s cubic-bezier(0.2, 1, 0.3, 1)';
     document.body.appendChild(flyer);
 
     requestAnimationFrame(() => {

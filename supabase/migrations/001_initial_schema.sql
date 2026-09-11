@@ -233,15 +233,34 @@ BEGIN
         );
     END IF;
 
-    -- Check if Already Used / Exited
+    -- Check if Already Used / Exited (Re-verification allowed)
     IF v_token.status = 'EXITED' THEN
         INSERT INTO public.security_logs (order_id, security_user_id, result, reason)
-        VALUES (v_token.order_id, p_security_user_id, 'ALREADY_USED', 'Token status is EXITED');
+        VALUES (v_token.order_id, p_security_user_id, 'ALREADY_USED', 'Token re-scanned (already EXITED)');
+
+        SELECT * INTO v_order
+        FROM public.orders
+        WHERE id = v_token.order_id;
+
+        SELECT json_agg(json_build_object(
+            'name', product_name_snapshot,
+            'barcode', barcode_snapshot,
+            'quantity', quantity,
+            'unit_price', unit_price,
+            'line_total', line_total
+        )) INTO v_items
+        FROM public.order_items
+        WHERE order_id = v_order.id;
 
         RETURN json_build_object(
-            'valid', false,
-            'reason', 'QR_ALREADY_USED',
-            'message', 'This QR pass has already been verified and exited.'
+            'valid', true,
+            'already_exited', true,
+            'status', 'EXITED',
+            'order_id', v_order.id,
+            'order_number', v_order.order_number,
+            'total', v_order.total_amount,
+            'items', v_items,
+            'verified_at', COALESCE(v_token.exited_at, v_token.verified_at)
         );
     END IF;
 

@@ -3,6 +3,11 @@
  */
 const inventoryUI = {
   async loadInventoryOverview() {
+    const list = document.getElementById('inventory-movements-table');
+    if (list) {
+      list.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;"><span class="spinner"></span></td></tr>';
+    }
+
     try {
       const overview = await api.get('/admin/inventory/overview');
       const movements = await api.get('/admin/inventory/movements');
@@ -11,6 +16,9 @@ const inventoryUI = {
       this.renderMovements(movements.movements || []);
     } catch (err) {
       console.error('Failed to load inventory:', err);
+      if (list) {
+        list.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--danger-color);">${err.message || 'Error loading inventory movements.'}</td></tr>`;
+      }
     }
   },
 
@@ -29,6 +37,11 @@ const inventoryUI = {
   renderMovements(movements) {
     const list = document.getElementById('inventory-movements-table');
     if (!list) return;
+
+    if (movements.length === 0) {
+      list.innerHTML = '<tr><td colspan="7" class="text-muted" style="text-align:center;padding:1.5rem;">No inventory movements recorded yet.</td></tr>';
+      return;
+    }
 
     list.innerHTML = movements.map(m => `
       <tr>

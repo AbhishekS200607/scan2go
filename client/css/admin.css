@@ -107,8 +107,8 @@
 }
 
 .data-table th {
-  background: rgba(15, 23, 42, 0.9);
-  color: var(--text-muted);
+  background: var(--surface-container-high, #e9edff);
+  color: var(--primary-dark, #0d3b2e);
   font-weight: 700;
   padding: 0.85rem 1rem;
   border-bottom: 1px solid var(--border-color);
@@ -230,3 +230,21 @@
     padding: 1rem 0.85rem;
   }
 }
+
+/* Responsive Form Grid for Admin Inventory Adjustments */
+.form-grid-responsive {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 2fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+@media (max-width: 900px) {
+  .form-grid-responsive {
+    grid-template-columns: 1fr;
+  }
+  .form-grid-responsive button {
+    width: 100%;
+  }
+}
+

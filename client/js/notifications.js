@@ -4,34 +4,6 @@
 const notificationsUI = {
   STORAGE_KEY: 'scan2go_notifications',
 
-  // Pre-seeded store announcements if empty
-  DEFAULT_NOTIFICATIONS: [
-    {
-      id: 'notif-1',
-      title: '🎉 Welcome to Scan2Go!',
-      message: 'Scan product barcodes with your camera to add items instantly to your cart.',
-      time: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-      type: 'system',
-      read: false
-    },
-    {
-      id: 'notif-2',
-      title: '⚡ Instant QR Exit Pass Enabled',
-      message: 'Complete payment to receive a single-use cryptographic QR pass for store exit.',
-      time: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-      type: 'order',
-      read: false
-    },
-    {
-      id: 'notif-3',
-      title: '🏷️ Fresh Produce Deal',
-      message: '5% GST tax is automatically calculated server-side for all organic produce items.',
-      time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      type: 'offer',
-      read: true
-    }
-  ],
-
   init() {
     this.ensureDrawerDOM();
     this.bindEvents();
@@ -47,8 +19,7 @@ const notificationsUI = {
     } catch (e) {
       console.error('Failed to parse notifications:', e);
     }
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.DEFAULT_NOTIFICATIONS));
-    return this.DEFAULT_NOTIFICATIONS;
+    return [];
   },
 
   saveNotifications(list) {

@@ -202,7 +202,7 @@ const productService = {
       category_id: category_id || null,
       price: parseFloat(price),
       tax_percent: parseFloat(tax_percent),
-      image_url: image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500',
+      image_url: image_url || null,
       minimum_stock: parseInt(minimum_stock, 10),
       stock_quantity: parseInt(stock_quantity, 10),
       active: true,

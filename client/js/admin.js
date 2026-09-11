@@ -3,6 +3,16 @@
  */
 const adminUI = {
   async loadDashboard() {
+    const recOrdersEl = document.getElementById('admin-recent-orders');
+    const lowStockWidget = document.getElementById('admin-low-stock-list');
+    
+    if (recOrdersEl) {
+      recOrdersEl.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;"><span class="spinner"></span></td></tr>';
+    }
+    if (lowStockWidget) {
+      lowStockWidget.innerHTML = '<div style="text-align:center;padding:1.5rem;"><span class="spinner"></span></div>';
+    }
+
     try {
       const metrics = await api.get('/admin/dashboard');
       this.renderMetrics(metrics);
@@ -28,42 +38,60 @@ const adminUI = {
 
     // Render Recent Orders
     const recOrdersEl = document.getElementById('admin-recent-orders');
-    if (recOrdersEl && m.recent_orders) {
-      recOrdersEl.innerHTML = m.recent_orders.map(o => `
-        <tr>
-          <td><span class="font-bold">${o.order_number}</span></td>
-          <td>${o.profiles?.full_name || 'Customer'}</td>
-          <td>${utils.formatCurrency(o.total_amount)}</td>
-          <td><span class="badge badge-${o.status === 'EXITED' ? 'info' : o.status === 'PAID' ? 'success' : 'warning'}">${o.status}</span></td>
-          <td>${utils.formatDate(o.created_at)}</td>
-        </tr>
-      `).join('');
+    if (recOrdersEl) {
+      if (!m.recent_orders || m.recent_orders.length === 0) {
+        recOrdersEl.innerHTML = '<tr><td colspan="5" class="text-muted" style="text-align:center;padding:1.5rem;">No recent orders recorded today.</td></tr>';
+      } else {
+        recOrdersEl.innerHTML = m.recent_orders.map(o => `
+          <tr>
+            <td><span class="font-bold">${o.order_number}</span></td>
+            <td>${o.profiles?.full_name || 'Customer'}</td>
+            <td>${utils.formatCurrency(o.total_amount)}</td>
+            <td><span class="badge badge-${o.status === 'EXITED' ? 'info' : o.status === 'PAID' ? 'success' : 'warning'}">${o.status}</span></td>
+            <td>${utils.formatDate(o.created_at)}</td>
+          </tr>
+        `).join('');
+      }
     }
 
     // Render Low Stock Widget
     const lowStockWidget = document.getElementById('admin-low-stock-list');
-    if (lowStockWidget && m.low_stock_items) {
-      lowStockWidget.innerHTML = m.low_stock_items.map(item => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border-color);">
-          <div>
-            <div class="font-semibold">${item.name}</div>
-            <div class="text-muted" style="font-size:0.75rem;">Barcode: ${item.barcode}</div>
+    if (lowStockWidget) {
+      if (!m.low_stock_items || m.low_stock_items.length === 0) {
+        lowStockWidget.innerHTML = '<div class="text-muted" style="text-align:center;padding:1.5rem;">No low stock items. Inventory levels healthy.</div>';
+      } else {
+        lowStockWidget.innerHTML = m.low_stock_items.map(item => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border-color);">
+            <div>
+              <div class="font-semibold">${item.name}</div>
+              <div class="text-muted" style="font-size:0.75rem;">Barcode: ${item.barcode}</div>
+            </div>
+            <div>
+              <span class="badge badge-warning">${item.stock_quantity} left</span>
+            </div>
           </div>
-          <div>
-            <span class="badge badge-warning">${item.stock_quantity} left</span>
-          </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
     }
   },
 
   async loadAdminProducts() {
+    const tableBody = document.getElementById('admin-products-table');
+    if (tableBody) {
+      tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;"><span class="spinner"></span></td></tr>';
+    }
+
     try {
       const data = await api.get('/admin/products', { active_only: false });
-      const tableBody = document.getElementById('admin-products-table');
       if (!tableBody) return;
 
-      tableBody.innerHTML = (data.products || []).map(p => `
+      const products = data.products || [];
+      if (products.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="7" class="text-muted" style="text-align:center;padding:1.5rem;">No products found in store catalog.</td></tr>';
+        return;
+      }
+
+      tableBody.innerHTML = products.map(p => `
         <tr>
           <td>
             <div class="font-bold">${p.name}</div>
@@ -85,6 +113,9 @@ const adminUI = {
       `).join('');
     } catch (err) {
       console.error('Failed to load admin products:', err);
+      if (tableBody) {
+        tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--danger-color);">${err.message || 'Error loading products catalog.'}</td></tr>`;
+      }
     }
   },
 
