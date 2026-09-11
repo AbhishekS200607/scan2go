@@ -143,11 +143,14 @@ const orderService = {
       const supabase = getSupabase();
       const { data, error } = await supabase
         .from('orders')
-        .select('*, checkout_tokens(status, expires_at)')
+        .select('*, order_items(*), checkout_tokens(status, expires_at, raw_token)')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+      return (data || []).map(o => ({
+        ...o,
+        items: o.order_items || o.items || []
+      }));
     }
 
     return localDb.orders
@@ -155,9 +158,12 @@ const orderService = {
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       .map(o => {
         const token = localDb.checkout_tokens.find(t => t.order_id === o.id);
+        const items = localDb.order_items.filter(i => i.order_id === o.id);
         return {
           ...o,
-          checkout_tokens: token ? { status: token.status, expires_at: token.expires_at } : null
+          items,
+          order_items: items,
+          checkout_tokens: token ? { status: token.status, expires_at: token.expires_at, raw_token: token.raw_token } : null
         };
       });
   },
