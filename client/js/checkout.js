@@ -94,22 +94,23 @@ const checkoutUI = {
         statusEl.className = `badge badge-${order.status === 'EXITED' ? 'info' : 'success'}`;
       }
 
-      const qrPayload = rawToken || (order.checkout_token ? order.checkout_token.raw_token || 'TOKEN_PROTECTED' : order.id);
+      // Prefer clean, high-contrast Order Reference payload (e.g. SG-482318) for ultra-fast camera resolution
+      const qrPayload = order.order_number || rawToken || (order.checkout_token ? order.checkout_token.raw_token : order.id);
 
       const backupRefTip = document.getElementById('backup-order-ref-tip');
       const backupTokenInput = document.getElementById('backup-pass-token');
-      if (backupRefTip) backupRefTip.textContent = order.order_number;
-      if (backupTokenInput) backupTokenInput.value = qrPayload;
+      if (backupRefTip) backupRefTip.textContent = order.order_number || 'N/A';
+      if (backupTokenInput) backupTokenInput.value = order.order_number || qrPayload;
 
       if (typeof QRCode !== 'undefined' && qrCanvas) {
         qrCanvas.innerHTML = '';
         new QRCode(qrCanvas, {
           text: qrPayload,
-          width: 200,
-          height: 200,
+          width: 240,
+          height: 240,
           colorDark: "#0f172a",
           colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
+          correctLevel: QRCode.CorrectLevel.M
         });
       }
     } catch (err) {

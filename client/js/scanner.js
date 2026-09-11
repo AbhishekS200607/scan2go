@@ -10,6 +10,8 @@ class BarcodeScannerEngine {
     this.isQrScanner = isQrScanner;
     this.html5QrcodeScanner = null;
     this.isScanning = false;
+    this.lastScannedText = null;
+    this.lastScanTime = 0;
   }
 
   async startScanner() {
@@ -20,30 +22,74 @@ class BarcodeScannerEngine {
         await this.loadScannerLibrary();
       }
 
-      this.html5QrcodeScanner = new Html5Qrcode(this.renderTargetId);
+      // Clear any prior canvas content
+      const targetEl = document.getElementById(this.renderTargetId);
+      if (targetEl) targetEl.innerHTML = '';
+
+      this.html5QrcodeScanner = new Html5Qrcode(this.renderTargetId, {
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
+        }
+      });
+
       const config = {
         fps: 15,
-        qrbox: this.isQrScanner ? { width: 250, height: 250 } : { width: 280, height: 180 },
+        qrbox: (viewfinderWidth, viewfinderHeight) => {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          const boxWidth = Math.max(Math.floor(minEdge * 0.8), 120);
+          const boxHeight = this.isQrScanner ? boxWidth : Math.max(Math.floor(boxWidth * 0.6), 80);
+          return { width: boxWidth, height: boxHeight };
+        },
         aspectRatio: 1.0
       };
 
-      await this.html5QrcodeScanner.start(
-        { facingMode: "environment" }, // Prefer back camera
-        config,
-        (decodedText, decodedResult) => {
-          utils.playBeep();
-          if (this.onScanSuccess) {
-            this.onScanSuccess(decodedText, decodedResult);
-          }
-        },
-        (errorMessage) => {
-          // Silent scan frame miss
+      const scanCallback = (decodedText, decodedResult) => {
+        const now = Date.now();
+        // Debounce scan calls to prevent duplicate triggers (2000ms cooldown)
+        if (this.lastScannedText === decodedText && (now - this.lastScanTime) < 2000) {
+          return;
         }
-      );
+        this.lastScannedText = decodedText;
+        this.lastScanTime = now;
+
+        if (this.onScanSuccess) {
+          this.onScanSuccess(decodedText, decodedResult);
+        }
+      };
+
+      // Try camera with facingMode "environment" (rear camera)
+      try {
+        await this.html5QrcodeScanner.start(
+          { facingMode: "environment" },
+          config,
+          scanCallback,
+          () => {} // Silent frame error handler
+        );
+      } catch (envErr) {
+        console.warn('Rear camera unavailable or restricted, attempting camera fallback...', envErr);
+        // Fallback to "user" camera or first available camera device
+        try {
+          const devices = await Html5Qrcode.getCameras();
+          if (devices && devices.length > 0) {
+            const cameraId = devices[0].id;
+            await this.html5QrcodeScanner.start(
+              cameraId,
+              config,
+              scanCallback,
+              () => {}
+            );
+          } else {
+            throw envErr;
+          }
+        } catch (fallbackErr) {
+          throw fallbackErr;
+        }
+      }
 
       this.isScanning = true;
     } catch (err) {
-      console.warn('Camera initialization fallback to simulation/manual mode:', err);
+      console.warn('Camera scanner start error:', err);
+      this.isScanning = false;
       if (this.onError) {
         this.onError(err);
       }
