@@ -95,18 +95,18 @@ const orderService = {
 
     if (isSupabaseConfigured) {
       const supabase = getSupabase();
-      const { data, error } = await supabase.from('orders').select('*, profiles(full_name, phone)').eq('id', orderId).single();
-      if (error || !data) return null;
-      order = data;
+      const [orderRes, itemsRes, payRes, tokenRes] = await Promise.all([
+        supabase.from('orders').select('*, profiles(full_name, phone)').eq('id', orderId).single(),
+        supabase.from('order_items').select('*').eq('order_id', orderId),
+        supabase.from('payments').select('*').eq('order_id', orderId).order('created_at', { ascending: false }).limit(1).single(),
+        supabase.from('checkout_tokens').select('*').eq('order_id', orderId).single()
+      ]);
 
-      const { data: itemData } = await supabase.from('order_items').select('*').eq('order_id', orderId);
-      items = itemData || [];
-
-      const { data: payData } = await supabase.from('payments').select('*').eq('order_id', orderId).order('created_at', { ascending: false }).limit(1).single();
-      payment = payData || null;
-
-      const { data: tokenData } = await supabase.from('checkout_tokens').select('*').eq('order_id', orderId).single();
-      checkoutToken = tokenData || null;
+      if (orderRes.error || !orderRes.data) return null;
+      order = orderRes.data;
+      items = itemsRes.data || [];
+      payment = payRes.data || null;
+      checkoutToken = tokenRes.data || null;
     } else {
       order = localDb.orders.find(o => o.id === orderId || o.order_number === orderId);
       if (!order) return null;

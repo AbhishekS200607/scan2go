@@ -43,14 +43,25 @@
           <span id="qr-order-status" class="badge badge-success" style="font-size:0.85rem;padding:0.35rem 1rem;">PAID</span>
         </div>
 
+        <!-- Backup Manual Pass Code Display -->
         <div style="background:#f8faf8;padding:1rem;border-radius:var(--radius-md);text-align:left;border:1px solid var(--border-color);font-size:0.85rem;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
-            <span class="text-muted">Order Ref:</span>
-            <span id="qr-order-number" class="font-bold" style="color:var(--primary-dark);"></span>
+          <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem;align-items:center;">
+            <span class="text-muted">Order Ref (Gate Backup Code):</span>
+            <span id="qr-order-number" class="font-bold" style="color:var(--primary-dark);font-size:1.05rem;font-family:monospace;letter-spacing:0.05em;"></span>
           </div>
-          <div style="display:flex;justify-content:space-between;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem;align-items:center;">
             <span class="text-muted">Total Paid:</span>
             <span id="qr-total-amount" class="font-bold" style="color:var(--primary-dark);"></span>
+          </div>
+          <div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px dashed #e0e0e0;">
+            <div class="text-muted" style="font-size:0.75rem;margin-bottom:0.25rem;">Pass Security Token String:</div>
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="backup-pass-token" readonly style="font-size:0.72rem;font-family:monospace;padding:0.35rem 0.5rem;background:#ffffff;border:1px solid var(--border-color);border-radius:6px;flex:1;" />
+              <button onclick="navigator.clipboard.writeText(document.getElementById('backup-pass-token').value);utils.showToast('Pass code copied!','info')" class="btn btn-secondary btn-sm" style="font-size:0.72rem;padding:0.35rem 0.6rem;">Copy</button>
+            </div>
+            <p class="text-muted" style="font-size:0.72rem;margin-top:0.35rem;line-height:1.3;">
+              💡 <strong>Security Gate Tip:</strong> Security staff can scan the QR code above or enter either <strong><span id="backup-order-ref-tip">SG-XXXXXX</span></strong> or the Pass Code manually.
+            </p>
           </div>
         </div>
 

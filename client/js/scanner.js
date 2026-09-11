@@ -3,10 +3,11 @@
  * Supports EAN-13, EAN-8, UPC-A, Code 128 and QR Codes
  */
 class BarcodeScannerEngine {
-  constructor({ renderTargetId, onScanSuccess, onError }) {
+  constructor({ renderTargetId, onScanSuccess, onError, isQrScanner = false }) {
     this.renderTargetId = renderTargetId;
     this.onScanSuccess = onScanSuccess;
     this.onError = onError;
+    this.isQrScanner = isQrScanner;
     this.html5QrcodeScanner = null;
     this.isScanning = false;
   }
@@ -21,9 +22,9 @@ class BarcodeScannerEngine {
 
       this.html5QrcodeScanner = new Html5Qrcode(this.renderTargetId);
       const config = {
-        fps: 10,
-        qrbox: { width: 280, height: 200 },
-        aspectRatio: 1.777778
+        fps: 15,
+        qrbox: this.isQrScanner ? { width: 250, height: 250 } : { width: 280, height: 180 },
+        aspectRatio: 1.0
       };
 
       await this.html5QrcodeScanner.start(

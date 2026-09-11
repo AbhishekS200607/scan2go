@@ -16,6 +16,7 @@ const securityUI = {
 
     this.scannerEngine = new BarcodeScannerEngine({
       renderTargetId: 'security-reader',
+      isQrScanner: true,
       onScanSuccess: (qrText) => {
         this.verifyToken(qrText);
       },

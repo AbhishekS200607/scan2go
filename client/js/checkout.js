@@ -96,6 +96,11 @@ const checkoutUI = {
 
       const qrPayload = rawToken || (order.checkout_token ? order.checkout_token.raw_token || 'TOKEN_PROTECTED' : order.id);
 
+      const backupRefTip = document.getElementById('backup-order-ref-tip');
+      const backupTokenInput = document.getElementById('backup-pass-token');
+      if (backupRefTip) backupRefTip.textContent = order.order_number;
+      if (backupTokenInput) backupTokenInput.value = qrPayload;
+
       if (typeof QRCode !== 'undefined' && qrCanvas) {
         qrCanvas.innerHTML = '';
         new QRCode(qrCanvas, {

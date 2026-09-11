@@ -16,7 +16,7 @@ const securityService = {
       };
     }
 
-    const tokenHash = hashToken(rawToken.trim());
+    let targetHash = hashToken(rawToken.trim());
 
     // 1. If remote Supabase is configured, call atomic PostgreSQL RPC procedure `verify_and_exit_checkout_token`
     if (isSupabaseConfigured) {
@@ -24,8 +24,19 @@ const securityService = {
       if (securityUserId) {
         await supabase.from('profiles').upsert([{ id: securityUserId, full_name: 'Alex Security Gate 1', role: 'security' }], { onConflict: 'id' });
       }
+
+      // Order Reference (e.g. SG-123456) manual fallback lookup
+      if (rawToken.trim().toUpperCase().startsWith('SG-')) {
+        const { data: ord } = await supabase.from('orders').select('id, checkout_tokens(token_hash)').eq('order_number', rawToken.trim().toUpperCase()).single();
+        if (ord && ord.checkout_tokens && ord.checkout_tokens.token_hash) {
+          targetHash = ord.checkout_tokens.token_hash;
+        } else if (ord && Array.isArray(ord.checkout_tokens) && ord.checkout_tokens[0]) {
+          targetHash = ord.checkout_tokens[0].token_hash;
+        }
+      }
+
       const { data, error } = await supabase.rpc('verify_and_exit_checkout_token', {
-        p_token_hash: tokenHash,
+        p_token_hash: targetHash,
         p_security_user_id: securityUserId
       });
       if (error) throw error;
@@ -33,7 +44,13 @@ const securityService = {
     }
 
     // 2. Atomic Simulation for local DB fallback
-    const token = localDb.checkout_tokens.find(t => t.token_hash === tokenHash);
+    let token = localDb.checkout_tokens.find(t => t.token_hash === targetHash);
+    if (!token && rawToken.trim().toUpperCase().startsWith('SG-')) {
+      const ord = localDb.orders.find(o => o.order_number === rawToken.trim().toUpperCase());
+      if (ord) {
+        token = localDb.checkout_tokens.find(t => t.order_id === ord.id);
+      }
+    }
 
     // Invalid Token
     if (!token) {
