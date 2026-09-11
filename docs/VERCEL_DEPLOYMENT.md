@@ -47,6 +47,9 @@ This guide walks you through deploying the **Scan2Go — Smart Supermarket Self-
 
 In Vercel Dashboard $\rightarrow$ **Project Settings** $\rightarrow$ **Environment Variables**, add the following keys:
 
+> [!NOTE]
+> **Do NOT add `PORT` to Vercel Environment Variables**. Vercel manages `PORT` automatically for serverless functions.
+
 | Key | Example Value | Description |
 |---|---|---|
 | `NODE_ENV` | `production` | Production environment flag |
