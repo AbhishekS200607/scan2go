@@ -22,6 +22,10 @@
           <span class="tagline">Exit Pass Verification System</span>
         </a>
         <div class="flex items-center gap-3">
+          <button class="notification-bell btn btn-secondary btn-sm flex items-center gap-1" aria-label="Notifications" style="position:relative;padding:0.4rem 0.65rem;" title="Notifications Drawer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notification-unread-count badge badge-danger" style="display:none;font-size:0.7rem;padding:0.15rem 0.4rem;border-radius:10px;">0</span>
+          </button>
           <span id="security-user-name" class="font-bold" style="font-size:0.9rem;color:var(--primary-dark);">Security Staff</span>
           <button onclick="auth.logout()" class="btn btn-secondary btn-sm">Logout</button>
         </div>
@@ -32,7 +36,7 @@
     <main class="container" style="padding-top:1.5rem;flex:1;max-width:700px;">
       
       <!-- Live Camera QR Scanner Card -->
-      <div class="card" style="margin-bottom:1.5rem;text-align:center;box-shadow:var(--shadow-md);">
+      <div class="card no-print" style="margin-bottom:1.5rem;text-align:center;box-shadow:var(--shadow-md);">
         <h2 style="color:var(--primary-dark);margin-bottom:0.3rem;">Scan Customer Exit QR Pass</h2>
         <p class="text-muted" style="margin-bottom:1.25rem;font-size:0.9rem;">
           Point camera at the single-use QR pass code on the customer's mobile receipt to verify payment and clear exit.
@@ -61,7 +65,7 @@
       <div id="security-result-container"></div>
 
       <!-- Recent Exit Verifications Audit Trail Table -->
-      <div class="card" style="box-shadow:var(--shadow-md);">
+      <div class="card no-print" style="box-shadow:var(--shadow-md);">
         <h3 style="margin-bottom:1rem;color:var(--primary-dark);">Recent Exit Verifications Audit Trail</h3>
         <div class="table-responsive">
           <table class="data-table">
@@ -88,6 +92,7 @@
   <script src="/js/utils.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
+  <script src="/js/notifications.js"></script>
   <script src="/js/scanner.js"></script>
   <script src="/js/security.js"></script>
   <script>
