@@ -37,7 +37,27 @@
       "dest": "client/admin/$1"
     },
     {
+      "src": "/login.html",
+      "dest": "client/login.html"
+    },
+    {
+      "src": "/login",
+      "dest": "client/login.html"
+    },
+    {
+      "src": "/register.html",
+      "dest": "client/register.html"
+    },
+    {
+      "src": "/register",
+      "dest": "client/register.html"
+    },
+    {
       "src": "/",
+      "dest": "client/index.html"
+    },
+    {
+      "src": "/index.html",
       "dest": "client/index.html"
     },
     {
@@ -45,7 +65,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "client/index.html"
+      "dest": "client/$1"
     }
   ]
 }
