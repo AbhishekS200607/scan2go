@@ -46,6 +46,46 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Native GZIP Compression Middleware
+const zlib = require('zlib');
+app.use((req, res, next) => {
+  const acceptEncoding = req.headers['accept-encoding'] || '';
+  if (!acceptEncoding.includes('gzip') || req.method === 'HEAD') return next();
+
+  const originalWrite = res.write;
+  const originalEnd = res.end;
+  const chunks = [];
+
+  res.write = function (chunk) {
+    if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  };
+
+  res.end = function (chunk) {
+    if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const body = Buffer.concat(chunks);
+
+    if (body.length > 512 && res.statusCode === 200 && !res.getHeader('Content-Encoding')) {
+      zlib.gzip(body, (err, compressed) => {
+        if (err || !compressed) {
+          if (body.length > 0) res.setHeader('Content-Length', body.length);
+          originalWrite.call(res, body);
+          return originalEnd.call(res);
+        }
+        res.setHeader('Content-Encoding', 'gzip');
+        res.setHeader('Content-Length', compressed.length);
+        originalWrite.call(res, compressed);
+        originalEnd.call(res);
+      });
+    } else {
+      if (body.length > 0) res.setHeader('Content-Length', body.length);
+      originalWrite.call(res, body);
+      originalEnd.call(res);
+    }
+  };
+
+  next();
+});
+
 // Logging Middleware
 app.use(morgan('dev'));
 
@@ -62,9 +102,19 @@ app.use('/api/security', securityRoutes);
 app.use('/api/admin/inventory', inventoryRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Serve Client Web Application (Static Frontend)
+// Serve Client Web Application with Cache-Control headers
 const clientPath = path.join(__dirname, '../../client');
-app.use(express.static(clientPath));
+app.use(express.static(clientPath, {
+  maxAge: '1h',
+  etag: true,
+  setHeaders: (res, filepath) => {
+    if (filepath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    } else if (filepath.endsWith('.js') || filepath.endsWith('.css') || filepath.endsWith('.png') || filepath.endsWith('.jpg')) {
+      res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+    }
+  }
+}));
 
 // Fallback to index.html for client SPA routes
 app.get('*', (req, res, next) => {

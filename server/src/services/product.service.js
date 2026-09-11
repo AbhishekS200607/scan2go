@@ -1,18 +1,46 @@
 const { getSupabase, localDb, isSupabaseConfigured } = require('../config/supabase');
 const logger = require('../utils/logger');
 
+// Lightweight In-Memory TTL Cache (15s)
+const CACHE_TTL_MS = 15000;
+const productCache = {
+  categories: null,
+  categoriesTime: 0,
+  barcodesMap: new Map(),
+  defaultProducts: null,
+  defaultProductsTime: 0,
+  invalidate() {
+    this.categories = null;
+    this.categoriesTime = 0;
+    this.barcodesMap.clear();
+    this.defaultProducts = null;
+    this.defaultProductsTime = 0;
+  }
+};
+
 const productService = {
   /**
    * Get all active categories
    */
   async getCategories() {
+    const now = Date.now();
+    if (productCache.categories && (now - productCache.categoriesTime) < CACHE_TTL_MS) {
+      return productCache.categories;
+    }
+
     if (isSupabaseConfigured) {
       const supabase = getSupabase();
       const { data, error } = await supabase.from('categories').select('*').eq('active', true).order('name');
       if (error) throw error;
+      productCache.categories = data;
+      productCache.categoriesTime = now;
       return data;
     }
-    return localDb.categories.filter(c => c.active);
+    
+    const list = localDb.categories.filter(c => c.active);
+    productCache.categories = list;
+    productCache.categoriesTime = now;
+    return list;
   },
 
   /**
@@ -22,6 +50,14 @@ const productService = {
     const pageNum = parseInt(page, 10);
     const limitNum = Math.min(parseInt(limit, 10), 100);
     const offset = (pageNum - 1) * limitNum;
+    const now = Date.now();
+
+    const isDefaultQuery = !search && !category_id && pageNum === 1 && active_only;
+    if (isDefaultQuery && productCache.defaultProducts && (now - productCache.defaultProductsTime) < CACHE_TTL_MS) {
+      return productCache.defaultProducts;
+    }
+
+    let result = null;
 
     if (isSupabaseConfigured) {
       const supabase = getSupabase();
@@ -37,35 +73,41 @@ const productService = {
       const { data, count, error } = await query;
       if (error) throw error;
 
-      return {
+      result = {
         products: data,
         total: count,
         page: pageNum,
         totalPages: Math.ceil(count / limitNum)
       };
+    } else {
+      let list = localDb.products;
+      if (active_only) list = list.filter(p => p.active);
+      if (category_id) list = list.filter(p => p.category_id === category_id);
+      if (search) {
+        const q = search.toLowerCase();
+        list = list.filter(p => p.name.toLowerCase().includes(q) || p.barcode.includes(q) || p.sku.toLowerCase().includes(q));
+      }
+
+      const total = list.length;
+      const paginated = list.slice(offset, offset + limitNum).map(p => {
+        const cat = localDb.categories.find(c => c.id === p.category_id);
+        return { ...p, categories: cat ? { name: cat.name } : null };
+      });
+
+      result = {
+        products: paginated,
+        total,
+        page: pageNum,
+        totalPages: Math.ceil(total / limitNum)
+      };
     }
 
-    // Local DB fallback
-    let list = localDb.products;
-    if (active_only) list = list.filter(p => p.active);
-    if (category_id) list = list.filter(p => p.category_id === category_id);
-    if (search) {
-      const q = search.toLowerCase();
-      list = list.filter(p => p.name.toLowerCase().includes(q) || p.barcode.includes(q) || p.sku.toLowerCase().includes(q));
+    if (isDefaultQuery) {
+      productCache.defaultProducts = result;
+      productCache.defaultProductsTime = now;
     }
 
-    const total = list.length;
-    const paginated = list.slice(offset, offset + limitNum).map(p => {
-      const cat = localDb.categories.find(c => c.id === p.category_id);
-      return { ...p, categories: cat ? { name: cat.name } : null };
-    });
-
-    return {
-      products: paginated,
-      total,
-      page: pageNum,
-      totalPages: Math.ceil(total / limitNum)
-    };
+    return result;
   },
 
   /**
@@ -88,36 +130,52 @@ const productService = {
    * Find product by Barcode (EAN-13, EAN-8, UPC-A, Code 128)
    */
   async getProductByBarcode(barcode) {
+    const cleanBarcode = barcode.trim();
+    const now = Date.now();
+    const cached = productCache.barcodesMap.get(cleanBarcode);
+    if (cached && (now - cached.time) < CACHE_TTL_MS) {
+      return cached.data;
+    }
+
+    let result = null;
+
     if (isSupabaseConfigured) {
       const supabase = getSupabase();
       const { data, error } = await supabase
         .from('products')
         .select('id, barcode, sku, name, description, price, tax_percent, image_url, stock_quantity, minimum_stock, active, category_id, categories(name)')
-        .eq('barcode', barcode.trim())
+        .eq('barcode', cleanBarcode)
         .single();
-      if (error) return null;
-      return data;
+      if (!error && data) {
+        result = data;
+      }
+    } else {
+      const prod = localDb.products.find(p => p.barcode === cleanBarcode);
+      if (prod) {
+        const cat = localDb.categories.find(c => c.id === prod.category_id);
+        result = {
+          id: prod.id,
+          barcode: prod.barcode,
+          sku: prod.sku,
+          name: prod.name,
+          description: prod.description,
+          price: prod.price,
+          tax_percent: prod.tax_percent,
+          image_url: prod.image_url,
+          stock_quantity: prod.stock_quantity,
+          minimum_stock: prod.minimum_stock,
+          active: prod.active,
+          category_id: prod.category_id,
+          categories: cat ? { name: cat.name } : null,
+          stock_available: prod.stock_quantity > 0
+        };
+      }
     }
 
-    const prod = localDb.products.find(p => p.barcode === barcode.trim());
-    if (!prod) return null;
-    const cat = localDb.categories.find(c => c.id === prod.category_id);
-    return {
-      id: prod.id,
-      barcode: prod.barcode,
-      sku: prod.sku,
-      name: prod.name,
-      description: prod.description,
-      price: prod.price,
-      tax_percent: prod.tax_percent,
-      image_url: prod.image_url,
-      stock_quantity: prod.stock_quantity,
-      minimum_stock: prod.minimum_stock,
-      active: prod.active,
-      category_id: prod.category_id,
-      categories: cat ? { name: cat.name } : null,
-      stock_available: prod.stock_quantity > 0
-    };
+    if (result) {
+      productCache.barcodesMap.set(cleanBarcode, { data: result, time: now });
+    }
+    return result;
   },
 
   /**
@@ -156,6 +214,7 @@ const productService = {
       const supabase = getSupabase();
       const { data, error } = await supabase.from('products').insert([newProd]).select().single();
       if (error) throw error;
+      productCache.invalidate();
       return data;
     }
 
@@ -174,6 +233,7 @@ const productService = {
       created_at: new Date().toISOString()
     });
 
+    productCache.invalidate();
     return newProd;
   },
 
@@ -181,6 +241,7 @@ const productService = {
    * Update Product (Admin)
    */
   async updateProduct(id, updateFields) {
+    productCache.invalidate();
     if (isSupabaseConfigured) {
       const supabase = getSupabase();
       const { data, error } = await supabase
