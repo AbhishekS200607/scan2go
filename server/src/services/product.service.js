@@ -1,0 +1,216 @@
+const { getSupabase, localDb, isSupabaseConfigured } = require('../config/supabase');
+const logger = require('../utils/logger');
+
+const productService = {
+  /**
+   * Get all active categories
+   */
+  async getCategories() {
+    if (isSupabaseConfigured) {
+      const supabase = getSupabase();
+      const { data, error } = await supabase.from('categories').select('*').eq('active', true).order('name');
+      if (error) throw error;
+      return data;
+    }
+    return localDb.categories.filter(c => c.active);
+  },
+
+  /**
+   * Get products with optional category, search query, page & limit
+   */
+  async getProducts({ category_id, search, page = 1, limit = 20, active_only = true }) {
+    const pageNum = parseInt(page, 10);
+    const limitNum = Math.min(parseInt(limit, 10), 100);
+    const offset = (pageNum - 1) * limitNum;
+
+    if (isSupabaseConfigured) {
+      const supabase = getSupabase();
+      let query = supabase.from('products').select('*, categories(name)', { count: 'exact' });
+
+      if (active_only) query = query.eq('active', true);
+      if (category_id) query = query.eq('category_id', category_id);
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,barcode.ilike.%${search}%,sku.ilike.%${search}%`);
+      }
+
+      query = query.order('name', { ascending: true }).range(offset, offset + limitNum - 1);
+      const { data, count, error } = await query;
+      if (error) throw error;
+
+      return {
+        products: data,
+        total: count,
+        page: pageNum,
+        totalPages: Math.ceil(count / limitNum)
+      };
+    }
+
+    // Local DB fallback
+    let list = localDb.products;
+    if (active_only) list = list.filter(p => p.active);
+    if (category_id) list = list.filter(p => p.category_id === category_id);
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(p => p.name.toLowerCase().includes(q) || p.barcode.includes(q) || p.sku.toLowerCase().includes(q));
+    }
+
+    const total = list.length;
+    const paginated = list.slice(offset, offset + limitNum).map(p => {
+      const cat = localDb.categories.find(c => c.id === p.category_id);
+      return { ...p, categories: cat ? { name: cat.name } : null };
+    });
+
+    return {
+      products: paginated,
+      total,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum)
+    };
+  },
+
+  /**
+   * Find single product by ID
+   */
+  async getProductById(id) {
+    if (isSupabaseConfigured) {
+      const supabase = getSupabase();
+      const { data, error } = await supabase.from('products').select('*, categories(name)').eq('id', id).single();
+      if (error) return null;
+      return data;
+    }
+    const prod = localDb.products.find(p => p.id === id);
+    if (!prod) return null;
+    const cat = localDb.categories.find(c => c.id === prod.category_id);
+    return { ...prod, categories: cat ? { name: cat.name } : null };
+  },
+
+  /**
+   * Find product by Barcode (EAN-13, EAN-8, UPC-A, Code 128)
+   */
+  async getProductByBarcode(barcode) {
+    if (isSupabaseConfigured) {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, barcode, sku, name, description, price, tax_percent, image_url, stock_quantity, minimum_stock, active, category_id, categories(name)')
+        .eq('barcode', barcode.trim())
+        .single();
+      if (error) return null;
+      return data;
+    }
+
+    const prod = localDb.products.find(p => p.barcode === barcode.trim());
+    if (!prod) return null;
+    const cat = localDb.categories.find(c => c.id === prod.category_id);
+    return {
+      id: prod.id,
+      barcode: prod.barcode,
+      sku: prod.sku,
+      name: prod.name,
+      description: prod.description,
+      price: prod.price,
+      tax_percent: prod.tax_percent,
+      image_url: prod.image_url,
+      stock_quantity: prod.stock_quantity,
+      minimum_stock: prod.minimum_stock,
+      active: prod.active,
+      category_id: prod.category_id,
+      categories: cat ? { name: cat.name } : null,
+      stock_available: prod.stock_quantity > 0
+    };
+  },
+
+  /**
+   * Create new product (Admin)
+   */
+  async createProduct(productData, performedByUserId) {
+    const { barcode, sku, name, description, category_id, price, tax_percent = 0, image_url, minimum_stock = 5, stock_quantity = 0 } = productData;
+
+    // Check duplicate barcode
+    const existing = await this.getProductByBarcode(barcode);
+    if (existing) {
+      const err = new Error(`Product with barcode ${barcode} already exists.`);
+      err.statusCode = 400;
+      err.code = 'DUPLICATE_BARCODE';
+      throw err;
+    }
+
+    const newProd = {
+      id: require('crypto').randomUUID(),
+      barcode: barcode.trim(),
+      sku: sku ? sku.trim() : `SKU-${Date.now()}`,
+      name: name.trim(),
+      description: description || '',
+      category_id: category_id || null,
+      price: parseFloat(price),
+      tax_percent: parseFloat(tax_percent),
+      image_url: image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500',
+      minimum_stock: parseInt(minimum_stock, 10),
+      stock_quantity: parseInt(stock_quantity, 10),
+      active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    if (isSupabaseConfigured) {
+      const supabase = getSupabase();
+      const { data, error } = await supabase.from('products').insert([newProd]).select().single();
+      if (error) throw error;
+      return data;
+    }
+
+    localDb.products.push(newProd);
+    
+    // Log initial inventory movement
+    localDb.inventory_movements.push({
+      id: 'inv-' + Date.now(),
+      product_id: newProd.id,
+      previous_quantity: 0,
+      change_quantity: newProd.stock_quantity,
+      new_quantity: newProd.stock_quantity,
+      reason: 'Initial Product Creation',
+      reference_type: 'INITIAL_SEED',
+      performed_by: performedByUserId,
+      created_at: new Date().toISOString()
+    });
+
+    return newProd;
+  },
+
+  /**
+   * Update Product (Admin)
+   */
+  async updateProduct(id, updateFields) {
+    if (isSupabaseConfigured) {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from('products')
+        .update({ ...updateFields, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    }
+
+    const index = localDb.products.findIndex(p => p.id === id);
+    if (index === -1) return null;
+
+    localDb.products[index] = {
+      ...localDb.products[index],
+      ...updateFields,
+      updated_at: new Date().toISOString()
+    };
+
+    return localDb.products[index];
+  },
+
+  /**
+   * Soft Deactivate Product (Admin - Never permanently hard delete referenced items)
+   */
+  async deactivateProduct(id) {
+    return this.updateProduct(id, { active: false });
+  }
+};
+
+module.exports = productService;

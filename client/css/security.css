@@ -1,0 +1,46 @@
+/* ============================================================================
+   Scan2Go — Security Staff Gate Stylesheet (security.css)
+   ============================================================================ */
+
+.security-panel {
+  max-width: 650px;
+  margin: 2rem auto;
+  text-align: center;
+}
+
+.verification-status-card {
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-top: 1.5rem;
+  box-shadow: var(--shadow-lg);
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.status-valid {
+  background: rgba(16, 185, 129, 0.15);
+  border: 2px solid var(--primary-500);
+}
+
+.status-invalid {
+  background: rgba(239, 68, 68, 0.15);
+  border: 2px solid var(--danger);
+}
+
+.verification-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+}
+
+.icon-valid { background: var(--primary-500); color: #fff; }
+.icon-invalid { background: var(--danger); color: #fff; }
+
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

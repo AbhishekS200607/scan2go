@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Scan2Go</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/customer.css">
+</head>
+<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem;background:var(--bg-main);">
+  <div class="card" style="width:100%;max-width:440px;box-shadow:var(--shadow-lg);padding:2rem;">
+    <div style="text-align:center;margin-bottom:1.75rem;">
+      <a href="/" class="nav-brand flex-col" style="align-items:center;margin-bottom:0.75rem;">
+        <div class="flex items-center gap-2">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary-dark);"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+          SCAN<span style="color:var(--accent-green);">2</span>GO
+        </div>
+        <span class="tagline">Scan. Shop. Pay. Go.</span>
+      </a>
+      <h2 style="font-size:1.6rem;color:var(--primary-dark);">Sign In</h2>
+      <p class="text-muted" style="font-size:0.9rem;">Customer, Security Staff, or Admin Access</p>
+    </div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label class="form-label" for="email">Email Address / User ID</label>
+        <input type="text" id="email" name="email" class="form-control" placeholder="e.g. customer@scan2go.com" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:1rem;">Sign In</button>
+    </form>
+
+    <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border-color);text-align:center;">
+      <p class="text-muted" style="font-size:0.85rem;font-weight:600;">Quick Fill Test Credentials:</p>
+      <div style="display:flex;gap:0.5rem;justify-content:center;margin-top:0.6rem;flex-wrap:wrap;">
+        <button type="button" class="btn btn-sm btn-secondary fill-btn" data-email="customer@scan2go.com" data-pass="customer123">Customer</button>
+        <button type="button" class="btn btn-sm btn-secondary fill-btn" data-email="security@scan2go.com" data-pass="security123">Security</button>
+        <button type="button" class="btn btn-sm btn-secondary fill-btn" data-email="admin@scan2go.com" data-pass="admin123">Admin</button>
+      </div>
+    </div>
+
+    <div style="margin-top:1.25rem;text-align:center;font-size:0.9rem;" class="text-muted">
+      New customer? <a href="/register.html" class="font-bold" style="color:var(--primary-dark);">Register Account</a>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    document.querySelectorAll('.fill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('email').value = btn.getAttribute('data-email');
+        document.getElementById('password').value = btn.getAttribute('data-pass');
+      });
+    });
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const pass = document.getElementById('password').value;
+      try {
+        await auth.login(email, pass);
+      } catch (err) {}
+    });
+  </script>
+</body>
+</html>
