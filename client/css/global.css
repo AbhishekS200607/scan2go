@@ -203,9 +203,9 @@ a:hover {
   padding-bottom: 5.5rem; /* Room for floating mobile nav */
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 900px) {
   #app {
-    padding-bottom: 0;
+    padding-bottom: 0 !important;
   }
 }
 

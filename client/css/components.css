@@ -273,8 +273,8 @@
   transition: transform var(--transition-smooth);
 }
 
-@media (min-width: 1024px) {
-  .mobile-nav { display: none; }
+@media (min-width: 900px) {
+  .mobile-nav { display: none !important; }
 }
 
 .mobile-nav-item {
