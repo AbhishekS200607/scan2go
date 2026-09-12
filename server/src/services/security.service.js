@@ -234,9 +234,17 @@ const securityService = {
         if (ord) {
           orderId = ord.id;
           orderNumber = ord.order_number;
+          await supabase.from('orders').update({ status: 'FLAGGED', updated_at: new Date().toISOString() }).eq('id', ord.id);
+        }
+      } else {
+        const { data: tok } = await supabase.from('checkout_tokens').select('order_id, orders(order_number)').eq('token_hash', targetHash).single();
+        if (tok && tok.order_id) {
+          orderId = tok.order_id;
+          orderNumber = tok.orders?.order_number;
+          await supabase.from('orders').update({ status: 'FLAGGED', updated_at: new Date().toISOString() }).eq('id', orderId);
         }
       }
-      this.logSecurityAttempt(orderId, securityUserId, 'INVALID', reason);
+      this.logSecurityAttempt(orderId, securityUserId, 'FLAGGED', reason);
       return {
         valid: false,
         reason,
@@ -252,16 +260,20 @@ const securityService = {
         token = localDb.checkout_tokens.find(t => t.order_id === ord.id);
         orderId = ord.id;
         orderNumber = ord.order_number;
+        ord.status = 'FLAGGED';
+        ord.updated_at = new Date().toISOString();
       }
     } else if (token) {
       const ord = localDb.orders.find(o => o.id === token.order_id);
       if (ord) {
         orderId = ord.id;
         orderNumber = ord.order_number;
+        ord.status = 'FLAGGED';
+        ord.updated_at = new Date().toISOString();
       }
     }
 
-    this.logSecurityAttempt(orderId, securityUserId, 'INVALID', reason);
+    this.logSecurityAttempt(orderId, securityUserId, 'FLAGGED', reason);
 
     return {
       valid: false,

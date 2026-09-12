@@ -47,16 +47,24 @@ const ordersUI = {
       const taxAmount = order.tax_amount ? parseFloat(order.tax_amount) : (grandTotal - subtotalNet);
       const passToken = order.checkout_tokens?.raw_token || '';
 
+      const isFlagged = order.status === 'FLAGGED';
       return `
-        <div class="card print-section" style="margin-bottom:1.25rem;box-shadow:var(--shadow-md);border:1px solid var(--border-color);">
+        <div class="card print-section" style="margin-bottom:1.25rem;box-shadow:var(--shadow-md);border:${isFlagged ? '2px solid #ef4444' : '1px solid var(--border-color)'};background:${isFlagged ? '#fffdfd' : '#ffffff'};">
           
+          ${isFlagged ? `
+            <div style="background:#fef2f2;border:1.5px solid #ef4444;border-radius:var(--radius-md);padding:0.75rem 1rem;margin-bottom:1rem;color:#991b1b;font-weight:700;font-size:0.85rem;display:flex;align-items:center;gap:8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#dc2626;flex-shrink:0;"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>🚨 FLAGGED BY SECURITY — DO NOT GO OUTSIDE! Please report to Secondary Inspection Desk.</span>
+            </div>
+          ` : ''}
+
           <!-- Order Card Summary Header -->
           <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--border-color);padding-bottom:0.85rem;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
             <div>
               <div style="display:flex;align-items:center;gap:0.5rem;">
                 <span class="font-bold" style="font-size:1.15rem;color:var(--primary-dark);font-family:monospace;">#${order.order_number}</span>
-                <span class="badge badge-${order.status === 'EXITED' ? 'info' : order.status === 'PAID' ? 'success' : 'warning'}" style="font-size:0.75rem;">
-                  ${order.status}
+                <span class="badge badge-${isFlagged ? 'danger' : order.status === 'EXITED' ? 'info' : order.status === 'PAID' ? 'success' : 'warning'}" style="font-size:0.75rem;${isFlagged ? 'background:#dc2626;color:#ffffff;' : ''}">
+                  ${isFlagged ? 'FLAGGED BY SECURITY' : order.status}
                 </span>
               </div>
               <div class="text-muted" style="font-size:0.78rem;margin-top:0.25rem;">

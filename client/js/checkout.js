@@ -111,9 +111,39 @@ const checkoutUI = {
 
       if (orderNumEl) orderNumEl.textContent = order.order_number;
       if (amountEl) amountEl.textContent = utils.formatCurrency(order.total_amount);
+      const isFlagged = order.status === 'FLAGGED' || (order.checkout_token && order.checkout_token.status === 'FLAGGED');
+
+      if (isFlagged) {
+        const flaggedBanner = document.getElementById('flagged-security-banner');
+        if (flaggedBanner) flaggedBanner.classList.remove('hidden');
+
+        const titleEl = document.getElementById('success-page-title');
+        const subTitleEl = document.getElementById('success-page-subtitle');
+        const iconBox = document.getElementById('success-icon-box');
+
+        if (titleEl) {
+          titleEl.textContent = '🚨 Exit Blocked — Flagged by Security';
+          titleEl.style.color = '#dc2626';
+        }
+        if (subTitleEl) {
+          subTitleEl.textContent = 'DO NOT GO OUTSIDE. Report to Secondary Inspection Desk immediately.';
+          subTitleEl.style.color = '#b91c1c';
+          subTitleEl.style.fontWeight = '700';
+        }
+        if (iconBox) {
+          iconBox.style.background = '#fee2e2';
+          iconBox.style.color = '#dc2626';
+          iconBox.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+        }
+      }
+
       if (statusEl) {
-        statusEl.textContent = order.status;
-        statusEl.className = `badge badge-${order.status === 'EXITED' ? 'info' : 'success'}`;
+        statusEl.textContent = isFlagged ? 'FLAGGED BY SECURITY' : order.status;
+        statusEl.className = `badge badge-${isFlagged ? 'danger' : order.status === 'EXITED' ? 'info' : 'success'}`;
+        if (isFlagged) {
+          statusEl.style.background = '#dc2626';
+          statusEl.style.color = '#ffffff';
+        }
       }
 
       // Prefer clean, high-contrast Order Reference payload (e.g. SG-482318) for ultra-fast camera resolution
@@ -130,7 +160,7 @@ const checkoutUI = {
           text: qrPayload,
           width: 240,
           height: 240,
-          colorDark: "#0f172a",
+          colorDark: isFlagged ? "#dc2626" : "#0f172a",
           colorLight: "#ffffff",
           correctLevel: QRCode.CorrectLevel.M
         });
