@@ -3,102 +3,279 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scan2Go — Smart Supermarket Self-Checkout</title>
+  <title>Scan2Go — Smart Supermarket Self-Checkout & Portal</title>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/customer.css">
+  <style>
+    body {
+      background: #081a14;
+      color: #ffffff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .index-hero-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      align-items: center;
+      padding: 2rem 0 3.5rem;
+    }
+    
+    @media (min-width: 960px) {
+      .index-hero-grid {
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 3rem;
+        padding: 3rem 0 5rem;
+      }
+    }
+
+    .hero-glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-lg, 24px);
+      padding: 2rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .role-tab-btn {
+      padding: 0.6rem 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .role-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
+    .role-tab-btn.active {
+      background: var(--accent-green, #10b981);
+      color: #081a14;
+      border-color: var(--accent-green, #10b981);
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+    }
+
+    .feature-step-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 1.5rem;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .feature-step-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(16, 185, 129, 0.3);
+      transform: translateY(-3px);
+    }
+
+    .metric-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.35rem 0.85rem;
+      border-radius: 20px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+  </style>
 </head>
 <body>
-  <div id="app">
+  <div id="app" style="background:#081a14;min-height:100vh;">
+    
     <!-- Navbar Header -->
-    <nav class="navbar">
-      <div class="container flex items-center justify-between">
+    <nav class="navbar" style="background:rgba(8,26,20,0.85);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:100;">
+      <div class="container flex items-center justify-between" style="padding-top:0.85rem;padding-bottom:0.85rem;">
         <a href="/" class="nav-brand flex-col">
           <div class="flex items-center gap-2">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary-dark);"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
-            SCAN<span style="color:var(--accent-green);">2</span>GO
+            <div style="width:34px;height:34px;border-radius:10px;background:rgba(16,185,129,0.2);color:#34d399;display:flex;align-items:center;justify-content:center;border:1px solid rgba(16,185,129,0.4);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+            </div>
+            <span style="color:#ffffff;font-weight:800;letter-spacing:-0.03em;font-size:1.25rem;">SCAN<span style="color:#34d399;">2</span>GO</span>
           </div>
-          <span class="tagline">Scan. Shop. Pay. Go.</span>
+          <span class="tagline" style="color:rgba(255,255,255,0.55);font-size:0.7rem;">Scan. Shop. Pay. Go.</span>
         </a>
-        <ul class="nav-links" id="desktop-nav-links">
-          <li><a href="/login.html" class="btn btn-secondary btn-sm">Login</a></li>
-          <li><a href="/register.html" class="btn btn-primary btn-sm">Register Account</a></li>
-        </ul>
+
+        <!-- Desktop Nav Links -->
+        <div class="desktop-nav-links" style="display:flex;align-items:center;gap:1.5rem;">
+          <a href="#how-it-works" class="desktop-nav-link" style="color:rgba(255,255,255,0.85);">How It Works</a>
+          <a href="#features" class="desktop-nav-link" style="color:rgba(255,255,255,0.85);">Features</a>
+          <a href="#system-accounts" class="desktop-nav-link" style="color:rgba(255,255,255,0.85);">Test Accounts</a>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <a href="/login.html" class="btn btn-secondary btn-sm" style="padding:0.45rem 0.95rem;font-size:0.8rem;background:rgba(255,255,255,0.12);color:#ffffff;border:1px solid rgba(255,255,255,0.2);">Log In</a>
+          <a href="/register.html" class="btn btn-primary btn-sm" style="padding:0.45rem 0.95rem;font-size:0.8rem;background:#10b981;color:#081a14;font-weight:700;">Register</a>
+        </div>
       </div>
     </nav>
 
-    <!-- Main Content Hero -->
-    <main class="container" style="padding-top:2rem;flex:1;">
-      <div class="hero-banner" style="padding:3rem 2.5rem;margin-bottom:2.5rem;">
-        <div class="hero-content">
-          <span class="hero-tag">A SMARTER WAY TO SHOP</span>
-          <h1 class="hero-title" style="font-size:2.8rem;">Skip Lines with Mobile Barcode Scan & Pay</h1>
-          <p class="hero-subtitle">Scan items off supermarket shelves with your phone camera, manage your cart in real-time, pay securely, and exit through security gates using single-use cryptographic QR passes.</p>
-          
-          <div class="flex gap-4" style="flex-wrap:wrap;margin-top:1.5rem;">
-            <a href="/login.html" class="btn btn-secondary btn-lg">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary-dark);"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
-              SCAN PRODUCT
+    <!-- Main Content Container -->
+    <main class="container" style="max-width:1200px;margin:0 auto;padding:0 1.25rem;flex:1;">
+      
+      <!-- Hero Grid Section -->
+      <div class="index-hero-grid">
+        
+        <!-- Hero Left Column Text -->
+        <div>
+          <div class="metric-badge mb-3" style="margin-bottom:1rem;">
+            <span style="width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 10px #34d399;" class="animate-pulse"></span>
+            SMART SUPERMARKET SELF-CHECKOUT PLATFORM
+          </div>
+
+          <h1 style="font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 800; line-height: 1.12; color: #ffffff; margin-bottom: 1.1rem; letter-spacing: -0.03em;">
+            Skip Checkout Lines with <span style="color:#34d399;background:linear-gradient(135deg, #34d399 0%, #059669 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Mobile Barcode Scan & Pay</span>
+          </h1>
+
+          <p style="color: rgba(255, 255, 255, 0.72); font-size: 1.05rem; line-height: 1.6; margin-bottom: 1.75rem; max-width: 580px;">
+            Scan products straight off supermarket shelves using your phone camera, review server-calculated cart totals with GST tax, pay digitally, and pass store security turnstiles using single-use cryptographic QR passes.
+          </p>
+
+          <div class="flex gap-3" style="flex-wrap:wrap;align-items:center;">
+            <a href="/login.html" class="btn btn-primary btn-lg" style="background:#10b981;color:#081a14;font-weight:800;padding:0.75rem 1.6rem;font-size:0.95rem;box-shadow:0 8px 24px rgba(16,185,129,0.35);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+              Start Mobile Barcode Scan
             </a>
-            <a href="/login.html" class="btn btn-outline btn-lg">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              Admin & Security Gate Portal
+
+            <a href="/security/dashboard.html" class="btn btn-secondary btn-lg" style="background:rgba(255,255,255,0.08);color:#ffffff;border:1px solid rgba(255,255,255,0.18);padding:0.75rem 1.4rem;font-size:0.95rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Security Gate Scanner
             </a>
           </div>
+
+          <!-- Feature Highlights Bar -->
+          <div class="flex gap-4" style="margin-top:2.2rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.1);flex-wrap:wrap;">
+            <div>
+              <div style="font-size:1.4rem;font-weight:800;color:#ffffff;">42ms</div>
+              <div style="font-size:0.75rem;color:rgba(255,255,255,0.55);">Low Latency Scan</div>
+            </div>
+            <div style="width:1px;height:36px;background:rgba(255,255,255,0.12);"></div>
+            <div>
+              <div style="font-size:1.4rem;font-weight:800;color:#34d399;">100%</div>
+              <div style="font-size:0.75rem;color:rgba(255,255,255,0.55);">Price Enforced</div>
+            </div>
+            <div style="width:1px;height:36px;background:rgba(255,255,255,0.12);"></div>
+            <div>
+              <div style="font-size:1.4rem;font-weight:800;color:#ffffff;">Single-Use</div>
+              <div style="font-size:0.75rem;color:rgba(255,255,255,0.55);">QR Exit Pass</div>
+            </div>
+          </div>
         </div>
-        <div class="hero-badge-container flex items-center justify-center p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
-          <div class="w-32 h-32 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
-              <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
-              <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
-              <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
-              <rect x="7" y="7" width="10" height="10" rx="1"></rect>
-            </svg>
+
+        <!-- Hero Right Column: Interactive Login Portal Card -->
+        <div class="hero-glass-card" id="system-accounts">
+          <div style="margin-bottom:1.25rem;text-align:center;">
+            <span style="font-size:0.75rem;font-weight:800;color:#34d399;letter-spacing:0.06em;text-transform:uppercase;">1-CLICK SYSTEM SIGN IN</span>
+            <h2 style="font-size:1.45rem;color:#ffffff;margin-top:0.2rem;">Portal Access & Login</h2>
+            <p style="font-size:0.82rem;color:rgba(255,255,255,0.65);">Select a role tab to auto-fill credentials and sign in instantly.</p>
+          </div>
+
+          <!-- Role Selector Tabs -->
+          <div class="flex gap-2" style="margin-bottom:1.25rem;">
+            <button class="role-tab-btn active" id="tab-cust" onclick="selectRole('customer')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              Customer
+            </button>
+            <button class="role-tab-btn" id="tab-sec" onclick="selectRole('security')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Security
+            </button>
+            <button class="role-tab-btn" id="tab-admin" onclick="selectRole('admin')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Admin
+            </button>
+          </div>
+
+          <!-- Interactive Login Form -->
+          <form id="hero-login-form">
+            <div class="form-group" style="margin-bottom:1rem;">
+              <label class="form-label" for="login-email" style="color:rgba(255,255,255,0.85);font-size:0.82rem;">Email Address</label>
+              <input type="email" id="login-email" class="form-control" style="background:rgba(255,255,255,0.08);color:#ffffff;border:1px solid rgba(255,255,255,0.18);font-size:0.9rem;height:44px;" placeholder="customer@scan2go.com" required value="customer@scan2go.com">
+            </div>
+
+            <div class="form-group" style="margin-bottom:1.25rem;">
+              <label class="form-label" for="login-password" style="color:rgba(255,255,255,0.85);font-size:0.82rem;">Password</label>
+              <input type="password" id="login-password" class="form-control" style="background:rgba(255,255,255,0.08);color:#ffffff;border:1px solid rgba(255,255,255,0.18);font-size:0.9rem;height:44px;" placeholder="••••••••" required value="customer123">
+            </div>
+
+            <button type="submit" id="btn-hero-submit" class="btn btn-primary btn-block" style="background:#10b981;color:#081a14;font-weight:800;height:48px;font-size:0.95rem;box-shadow:0 6px 20px rgba(16,185,129,0.3);">
+              Sign In & Launch Portal
+            </button>
+          </form>
+
+          <div style="margin-top:1.1rem;text-align:center;font-size:0.82rem;color:rgba(255,255,255,0.6);">
+            New customer? <a href="/register.html" style="color:#34d399;font-weight:700;text-decoration:underline;">Create New Account</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- How It Works 3-Step Walkthrough Section -->
+      <div id="how-it-works" style="padding:3rem 0;border-top:1px solid rgba(255,255,255,0.08);">
+        <div style="text-align:center;margin-bottom:2.5rem;">
+          <span style="font-size:0.75rem;font-weight:800;color:#34d399;letter-spacing:0.06em;text-transform:uppercase;">THE SCAN2GO PROCESS</span>
+          <h2 style="font-size:2rem;color:#ffffff;margin-top:0.25rem;">How Smart Self-Checkout Works</h2>
+          <p style="color:rgba(255,255,255,0.65);font-size:0.92rem;max-width:560px;margin:0.4rem auto 0;">Three simple steps from supermarket shelf to turnstile exit clearance.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1.5rem;">
+          <!-- Step 1 -->
+          <div class="feature-step-card">
+            <div style="width:48px;height:48px;border-radius:14px;background:rgba(16,185,129,0.15);color:#34d399;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;border:1px solid rgba(16,185,129,0.3);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+            </div>
+            <h3 style="font-size:1.15rem;color:#ffffff;margin-bottom:0.4rem;">1. Scan Product Barcode</h3>
+            <p style="font-size:0.88rem;color:rgba(255,255,255,0.65);line-height:1.5;">Point your phone camera at any item barcode (EAN-13 / UPC). The server verifies price and stock instantaneously.</p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="feature-step-card">
+            <div style="width:48px;height:48px;border-radius:14px;background:rgba(59,130,246,0.15);color:#60a5fa;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;border:1px solid rgba(59,130,246,0.3);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            </div>
+            <h3 style="font-size:1.15rem;color:#ffffff;margin-bottom:0.4rem;">2. Instant Mobile Payment</h3>
+            <p style="font-size:0.88rem;color:rgba(255,255,255,0.65);line-height:1.5;">Review cart subtotal with 5% GST tax. Complete digital payment in seconds to generate your single-use QR exit pass.</p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="feature-step-card">
+            <div style="width:48px;height:48px;border-radius:14px;background:rgba(245,158,11,0.15);color:#fbbf24;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;border:1px solid rgba(245,158,11,0.3);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3 style="font-size:1.15rem;color:#ffffff;margin-bottom:0.4rem;">3. Turnstile QR Clearance</h3>
+            <p style="font-size:0.88rem;color:rgba(255,255,255,0.65);line-height:1.5;">Present your single-use digital QR exit code at the store exit turnstile. Security staff verify items and disengage gate locks.</p>
           </div>
         </div>
       </div>
 
-      <!-- Quick Demo Accounts Cards -->
-      <div class="card" style="margin-bottom:2.5rem;box-shadow:var(--shadow-md);">
-        <h3 style="margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;color:var(--primary-dark);">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-green);"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          System Test Accounts
-        </h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:1rem;">
-          <div style="background:#f8faf8;padding:1.25rem;border-radius:var(--radius-md);border:1px solid var(--border-color);">
-            <div class="font-bold flex items-center gap-2" style="color:var(--primary-dark);">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-green);"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-              Customer Account
-            </div>
-            <div class="text-muted" style="font-size:0.88rem;margin-top:0.35rem;">Email: customer@scan2go.com</div>
-            <div class="text-muted" style="font-size:0.88rem;">Password: customer123</div>
-          </div>
-
-          <div style="background:#f8faf8;padding:1.25rem;border-radius:var(--radius-md);border:1px solid var(--border-color);">
-            <div class="font-bold flex items-center gap-2" style="color:var(--primary-dark);">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-blue);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              Security Staff Account
-            </div>
-            <div class="text-muted" style="font-size:0.88rem;margin-top:0.35rem;">Email: security@scan2go.com</div>
-            <div class="text-muted" style="font-size:0.88rem;">Password: security123</div>
-          </div>
-
-          <div style="background:#f8faf8;padding:1.25rem;border-radius:var(--radius-md);border:1px solid var(--border-color);">
-            <div class="font-bold flex items-center gap-2" style="color:var(--primary-dark);">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-gold);"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              Administrator Account
-            </div>
-            <div class="text-muted" style="font-size:0.88rem;margin-top:0.35rem;">Email: admin@scan2go.com</div>
-            <div class="text-muted" style="font-size:0.88rem;">Password: admin123</div>
-          </div>
-        </div>
-      </div>
     </main>
 
     <!-- Footer -->
-    <footer style="text-align:center;padding:1.5rem 0;color:var(--text-muted);font-size:0.85rem;border-top:1px solid var(--border-color);">
-      SCAN2GO | Scan. Shop. Pay. Go. — A smarter way to shop.
+    <footer style="text-align:center;padding:2rem 1rem;color:rgba(255,255,255,0.5);font-size:0.82rem;border-top:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.2);">
+      <div class="flex items-center justify-center gap-2" style="margin-bottom:0.5rem;">
+        <span style="width:6px;height:6px;border-radius:50%;background:#34d399;"></span>
+        <span style="color:rgba(255,255,255,0.8);font-weight:700;">SCAN2GO SMART SELF-CHECKOUT SYSTEM</span>
+      </div>
+      <div>Scan. Shop. Pay. Go. — Enterprise Supermarket Self-Checkout Platform</div>
     </footer>
   </div>
 
@@ -109,8 +286,49 @@
   <script>
     if (auth.isAuthenticated()) {
       const user = auth.getUser();
-      auth.redirectByRole(user.role);
+      if (user && user.role) {
+        auth.redirectByRole(user.role);
+      }
     }
+
+    const credentials = {
+      customer: { email: 'customer@scan2go.com', pass: 'customer123' },
+      security: { email: 'security@scan2go.com', pass: 'security123' },
+      admin: { email: 'admin@scan2go.com', pass: 'admin123' }
+    };
+
+    function selectRole(role) {
+      document.querySelectorAll('.role-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`tab-${role === 'customer' ? 'cust' : role === 'security' ? 'sec' : 'admin'}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const creds = credentials[role];
+      if (creds) {
+        document.getElementById('login-email').value = creds.email;
+        document.getElementById('login-password').value = creds.pass;
+      }
+    }
+
+    document.getElementById('hero-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-password').value;
+      const btn = document.getElementById('btn-hero-submit');
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner" style="width:18px;height:18px;"></span> Signing in...';
+      }
+
+      try {
+        await auth.login(email, pass);
+      } catch (err) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Sign In & Launch Portal';
+        }
+      }
+    });
   </script>
 </body>
 </html>

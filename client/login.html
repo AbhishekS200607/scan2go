@@ -7,46 +7,93 @@
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/customer.css">
+  <style>
+    body {
+      background: #081a14;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .auth-glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-lg, 24px);
+      padding: 2.25rem 2rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .fill-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.4rem 0.75rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .fill-btn:hover {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+  </style>
 </head>
-<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem;background:var(--bg-main);">
-  <div class="card" style="width:100%;max-width:440px;box-shadow:var(--shadow-lg);padding:2rem;">
+<body>
+  <div class="auth-glass-card animate-fade-in">
+    
     <div style="text-align:center;margin-bottom:1.75rem;">
-      <a href="/" class="nav-brand flex-col" style="align-items:center;margin-bottom:0.75rem;">
+      <a href="/" class="nav-brand flex-col" style="align-items:center;margin-bottom:0.85rem;display:inline-flex;">
         <div class="flex items-center gap-2">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary-dark);"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
-          SCAN<span style="color:var(--accent-green);">2</span>GO
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(16,185,129,0.2);color:#34d399;display:flex;align-items:center;justify-content:center;border:1px solid rgba(16,185,129,0.4);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+          </div>
+          <span style="color:#ffffff;font-weight:800;font-size:1.35rem;letter-spacing:-0.03em;">SCAN<span style="color:#34d399;">2</span>GO</span>
         </div>
-        <span class="tagline">Scan. Shop. Pay. Go.</span>
+        <span class="tagline" style="color:rgba(255,255,255,0.55);font-size:0.72rem;margin-top:0.25rem;">Scan. Shop. Pay. Go.</span>
       </a>
-      <h2 style="font-size:1.6rem;color:var(--primary-dark);">Sign In</h2>
-      <p class="text-muted" style="font-size:0.9rem;">Customer, Security Staff, or Admin Access</p>
+      <h2 style="font-size:1.55rem;color:#ffffff;font-weight:800;">Sign In</h2>
+      <p style="font-size:0.85rem;color:rgba(255,255,255,0.65);">Customer, Security Staff, or Admin Access</p>
     </div>
 
     <form id="login-form">
-      <div class="form-group">
-        <label class="form-label" for="email">Email Address / User ID</label>
-        <input type="text" id="email" name="email" class="form-control" placeholder="e.g. customer@scan2go.com" required>
+      <div class="form-group" style="margin-bottom:1.1rem;">
+        <label class="form-label" for="email" style="color:rgba(255,255,255,0.85);font-size:0.82rem;">Email Address / User ID</label>
+        <input type="text" id="email" name="email" class="form-control" style="background:rgba(255,255,255,0.08);color:#ffffff;border:1px solid rgba(255,255,255,0.18);font-size:0.9rem;height:44px;" placeholder="e.g. customer@scan2go.com" required>
       </div>
 
-      <div class="form-group">
-        <label class="form-label" for="password">Password</label>
-        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+      <div class="form-group" style="margin-bottom:1.25rem;">
+        <label class="form-label" for="password" style="color:rgba(255,255,255,0.85);font-size:0.82rem;">Password</label>
+        <input type="password" id="password" name="password" class="form-control" style="background:rgba(255,255,255,0.08);color:#ffffff;border:1px solid rgba(255,255,255,0.18);font-size:0.9rem;height:44px;" placeholder="••••••••" required>
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:1rem;">Sign In</button>
+      <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block" style="background:#10b981;color:#081a14;font-weight:800;height:48px;font-size:0.95rem;box-shadow:0 6px 20px rgba(16,185,129,0.35);">
+        Sign In & Launch Portal
+      </button>
     </form>
 
-    <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border-color);text-align:center;">
-      <p class="text-muted" style="font-size:0.85rem;font-weight:600;">Quick Fill Test Credentials:</p>
+    <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(255,255,255,0.1);text-align:center;">
+      <p style="font-size:0.78rem;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.04em;">1-Click Test Credentials:</p>
       <div style="display:flex;gap:0.5rem;justify-content:center;margin-top:0.6rem;flex-wrap:wrap;">
-        <button type="button" class="btn btn-sm btn-secondary fill-btn" data-email="customer@scan2go.com" data-pass="customer123">Customer</button>
-        <button type="button" class="btn btn-sm btn-secondary fill-btn" data-email="security@scan2go.com" data-pass="security123">Security</button>
-        <button type="button" class="btn btn-sm btn-secondary fill-btn" data-email="admin@scan2go.com" data-pass="admin123">Admin</button>
+        <button type="button" class="fill-btn" data-email="customer@scan2go.com" data-pass="customer123">🛒 Customer</button>
+        <button type="button" class="fill-btn" data-email="security@scan2go.com" data-pass="security123">🛡️ Security</button>
+        <button type="button" class="fill-btn" data-email="admin@scan2go.com" data-pass="admin123">⚙️ Admin</button>
       </div>
     </div>
 
-    <div style="margin-top:1.25rem;text-align:center;font-size:0.9rem;" class="text-muted">
-      New customer? <a href="/register.html" class="font-bold" style="color:var(--primary-dark);">Register Account</a>
+    <div style="margin-top:1.25rem;text-align:center;font-size:0.85rem;color:rgba(255,255,255,0.65);">
+      New customer? <a href="/register.html" style="color:#34d399;font-weight:700;text-decoration:underline;">Register Account</a>
     </div>
   </div>
 
@@ -64,11 +111,23 @@
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('email').value;
+      const email = document.getElementById('email').value.trim();
       const pass = document.getElementById('password').value;
+      const btn = document.getElementById('btn-login-submit');
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner" style="width:18px;height:18px;"></span> Signing in...';
+      }
+
       try {
         await auth.login(email, pass);
-      } catch (err) {}
+      } catch (err) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Sign In & Launch Portal';
+        }
+      }
     });
   </script>
 </body>
