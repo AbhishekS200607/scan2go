@@ -13,8 +13,9 @@ const productController = {
 
   async getProducts(req, res, next) {
     try {
-      const { category_id, search, page = 1, limit = 20 } = req.query;
-      const data = await productService.getProducts({ category_id, search, page, limit });
+      const { category_id, search, page = 1, limit = 20, active_only } = req.query;
+      const activeOnlyBool = active_only === undefined ? true : (active_only !== 'false' && active_only !== false);
+      const data = await productService.getProducts({ category_id, search, page, limit, active_only: activeOnlyBool });
       return sendSuccess(res, data);
     } catch (err) {
       next(err);

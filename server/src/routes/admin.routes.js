@@ -13,6 +13,7 @@ router.get('/customers', adminController.getCustomers);
 router.get('/orders', adminController.getAllOrders);
 
 // Admin Product Management Endpoints
+router.get('/products', productController.getProducts);
 router.post('/products', productController.createProduct);
 router.patch('/products/:id', productController.updateProduct);
 router.delete('/products/:id', productController.deactivateProduct);
