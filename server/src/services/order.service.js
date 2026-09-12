@@ -143,7 +143,7 @@ const orderService = {
       const supabase = getSupabase();
       const { data, error } = await supabase
         .from('orders')
-        .select('*, order_items(*), checkout_tokens(status, expires_at, raw_token)')
+        .select('*, order_items(*), checkout_tokens(status, expires_at)')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -163,7 +163,7 @@ const orderService = {
           ...o,
           items,
           order_items: items,
-          checkout_tokens: token ? { status: token.status, expires_at: token.expires_at, raw_token: token.raw_token } : null
+          checkout_tokens: token ? { status: token.status, expires_at: token.expires_at } : null
         };
       });
   },
